@@ -16,24 +16,27 @@
  */
 package org.apache.dubbo.common.utils;
 
-import org.apache.log4j.FileAppender;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.core.Filter;
+import org.apache.logging.log4j.core.Layout;
+import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.plugins.Plugin;
+import org.apache.logging.log4j.core.config.plugins.PluginAttribute;
+import org.apache.logging.log4j.core.config.plugins.PluginElement;
+import org.apache.logging.log4j.core.config.plugins.PluginFactory;
+import org.apache.logging.log4j.core.layout.PatternLayout;
+import org.slf4j.event.Level;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DubboAppender extends FileAppender {
-
-    private static final String DEFAULT_FILE_NAME = "dubbo.log";
-
-    public DubboAppender() {
-        super();
-        setFile(DEFAULT_FILE_NAME);
-    }
+@Plugin(name = "Dubbo", category = "Core", elementType = "appender", printObject = true)
+public class DubboAppender extends AbstractAppender {
 
     public static boolean available = false;
 
-    public static List<Log> logList = new ArrayList<>();
+    public static List<Log> logList = new ArrayList<Log>();
 
     public static void doStart() {
         available = true;
@@ -47,22 +50,42 @@ public class DubboAppender extends FileAppender {
         logList.clear();
     }
 
+    public DubboAppender(String name, Filter filter, Layout<? extends Serializable> layout, boolean ignoreExceptions) {
+        super(name, filter, layout, ignoreExceptions);
+    }
+
     @Override
-    public void append(LoggingEvent event) {
-        super.append(event);
+    public void append(LogEvent event) {
+        System.out.println(event.getMessage().getFormattedMessage());
         if (available) {
             Log temp = parseLog(event);
             logList.add(temp);
         }
     }
 
-    private Log parseLog(LoggingEvent event) {
+    private Log parseLog(LogEvent event) {
         Log log = new Log();
-        log.setLogName(event.getLogger().getName());
-        log.setLogLevel(event.getLevel());
+        log.setLogName(event.getLoggerName());
+        log.setLogLevel(Level.valueOf(event.getLevel().toString()));
         log.setLogThread(event.getThreadName());
-        log.setLogMessage(event.getMessage().toString());
+        log.setLogMessage(event.getMessage().getFormattedMessage());
         return log;
     }
 
+    @PluginFactory
+    public static DubboAppender createAppender(@PluginAttribute("name") String name,
+                                               @PluginAttribute("ignoreExceptions") boolean ignoreExceptions,
+                                               @PluginElement("Layout") Layout layout,
+                                               @PluginElement("Filters") Filter filter) {
+
+        if (name == null) {
+            LOGGER.error("No name provided for StubAppender");
+            return null;
+        }
+
+        if (layout == null) {
+            layout = PatternLayout.createDefaultLayout();
+        }
+        return new DubboAppender(name, filter, layout, ignoreExceptions);
+    }
 }

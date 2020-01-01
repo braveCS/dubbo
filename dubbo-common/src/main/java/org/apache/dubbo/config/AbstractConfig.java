@@ -25,6 +25,7 @@ import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ClassUtils;
 import org.apache.dubbo.common.utils.CollectionUtils;
+import org.apache.dubbo.common.utils.ConfigUtils;
 import org.apache.dubbo.common.utils.MethodUtils;
 import org.apache.dubbo.common.utils.ReflectUtils;
 import org.apache.dubbo.common.utils.StringUtils;
@@ -107,6 +108,111 @@ public abstract class AbstractConfig implements Serializable {
             }
         }
         return StringUtils.camelToSplitName(tag, "-");
+    }
+
+    /**##CHANGE BY CN.FFCS##**/
+    public static void appendProperties(AbstractConfig config) {
+        if (config == null) {
+            return;
+        }
+        String prefix = "dubbo." + getTagName(config.getClass()) + ".";
+        Method[] methods = config.getClass().getMethods();
+        for (Method method : methods) {
+            try {
+                String name = method.getName();
+                if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers())
+                        && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
+                    String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), ".");
+
+                    String value = null;
+                    if (config.getId() != null && config.getId().length() > 0) {
+                        String pn = prefix + config.getId() + "." + property;
+                        value = System.getProperty(pn);
+                        if (!StringUtils.isBlank(value)) {
+                            logger.info("Use System Property " + pn + " to config dubbo");
+                        }
+                    }
+                    if (value == null || value.length() == 0) {
+                        String pn = prefix + property;
+                        value = System.getProperty(pn);
+                        if (!StringUtils.isBlank(value)) {
+                            logger.info("Use System Property " + pn + " to config dubbo");
+                        }
+                    }
+                    if (value == null || value.length() == 0) {
+                        Method getter;
+                        try {
+                            getter = config.getClass().getMethod("get" + name.substring(3));
+                        } catch (NoSuchMethodException e) {
+                            try {
+                                getter = config.getClass().getMethod("is" + name.substring(3));
+                            } catch (NoSuchMethodException e2) {
+                                getter = null;
+                            }
+                        }
+                        if (getter != null) {
+                            if (getter.invoke(config) == null) {
+                                if (config.getId() != null && config.getId().length() > 0) {
+                                    value = ConfigUtils.getProperty(prefix + config.getId() + "." + property);
+                                }
+                                if (value == null || value.length() == 0) {
+                                    value = ConfigUtils.getProperty(prefix + property);
+                                }
+                                if (value == null || value.length() == 0) {
+                                    String legacyKey = LEGACY_PROPERTIES.get(prefix + property);
+                                    if (legacyKey != null && legacyKey.length() > 0) {
+                                        value = convertLegacyValue(legacyKey, ConfigUtils.getProperty(legacyKey));
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+                    if (value != null && value.length() > 0) {
+                        method.invoke(config, convertPrimitive(method.getParameterTypes()[0], value));
+                    }
+                }
+            } catch (Exception e) {
+                logger.error(e.getMessage(), e);
+            }
+        }
+    }
+
+
+
+    private static boolean isPrimitive(Class<?> type) {
+        return type.isPrimitive()
+                || type == String.class
+                || type == Character.class
+                || type == Boolean.class
+                || type == Byte.class
+                || type == Short.class
+                || type == Integer.class
+                || type == Long.class
+                || type == Float.class
+                || type == Double.class
+                || type == Object.class;
+    }
+
+    private static Object convertPrimitive(Class<?> type, String value) {
+        if (type == char.class || type == Character.class) {
+            return value.length() > 0 ? value.charAt(0) : '\0';
+        } else if (type == boolean.class || type == Boolean.class) {
+            return Boolean.valueOf(value);
+        } else if (type == byte.class || type == Byte.class) {
+            return Byte.valueOf(value);
+        } else if (type == short.class || type == Short.class) {
+            return Short.valueOf(value);
+        } else if (type == int.class || type == Integer.class) {
+            return Integer.valueOf(value);
+        } else if (type == long.class || type == Long.class) {
+            return Long.valueOf(value);
+        } else if (type == float.class || type == Float.class) {
+            return Float.valueOf(value);
+        } else if (type == double.class || type == Double.class) {
+            return Double.valueOf(value);
+        }
+        return value;
     }
 
     public static void appendParameters(Map<String, String> parameters, Object config) {

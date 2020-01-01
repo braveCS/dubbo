@@ -37,7 +37,8 @@ public interface CommonConstants {
 
     String DUBBO_PROPERTIES_KEY = "dubbo.properties.file";
 
-    String DEFAULT_DUBBO_PROPERTIES = "dubbo.properties";
+    /**##CHANGE BY CN.FFCS##**/
+    String DEFAULT_DUBBO_PROPERTIES = "global.properties";
 
     String ANY_VALUE = "*";
 

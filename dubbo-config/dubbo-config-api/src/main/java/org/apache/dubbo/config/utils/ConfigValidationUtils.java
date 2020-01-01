@@ -220,6 +220,25 @@ public class ConfigValidationUtils {
         map.put(REGISTER_IP_KEY, hostToRegistry);
 
         MonitorConfig monitor = interfaceConfig.getMonitor();
+
+        /**##CHANGE BY CN.FFCS##**/
+        if (monitor == null) {
+            String monitorAddress = ConfigUtils.getProperty("dubbo.monitor.address");
+            String monitorProtocol = ConfigUtils.getProperty("dubbo.monitor.protocol");
+            if ((monitorAddress == null || monitorAddress.length() == 0) && (monitorProtocol == null || monitorProtocol.length() == 0)) {
+                return null;
+            }
+
+            monitor = new MonitorConfig();
+            if (monitorAddress != null && monitorAddress.length() > 0) {
+                monitor.setAddress(monitorAddress);
+            }
+            if (monitorProtocol != null && monitorProtocol.length() > 0) {
+                monitor.setProtocol(monitorProtocol);
+            }
+        }
+        interfaceConfig.appendProperties(monitor);
+
         ApplicationConfig application = interfaceConfig.getApplication();
         AbstractConfig.appendParameters(map, monitor);
         AbstractConfig.appendParameters(map, application);

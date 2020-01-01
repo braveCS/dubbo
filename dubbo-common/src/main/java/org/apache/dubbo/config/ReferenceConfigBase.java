@@ -120,6 +120,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
             consumerConfig.refresh();
             return consumerConfig;
         }));
+        appendProperties(consumer);
     }
 
     public Class<?> getActualInterface() {

@@ -30,7 +30,7 @@
     <packaging>pom</packaging>
 
     <name>dubbo-bom</name>
-    <description>Dubbo dependencies BOM</description>
+    <description>Dubbo dependencies BOM，统一定义了 Dubbo 的版本号，用在一个一个添加dubbo-xx-xx依赖时用到</description>
     <url>https://github.com/apache/dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
@@ -88,11 +88,6 @@
 
     <dependencyManagement>
         <dependencies>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo</artifactId>
-                <version>${project.version}</version>
-            </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-cluster</artifactId>
@@ -195,6 +190,11 @@
             </dependency>
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-rpc-http-invoker</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-rpc-webservice</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -291,11 +291,6 @@
             <dependency>
                 <groupId>org.apache.dubbo</groupId>
                 <artifactId>dubbo-container-spring</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.dubbo</groupId>
-                <artifactId>dubbo-container-log4j</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -1,5 +1,11 @@
 # Release Notes
 
+## 2.7.6-ffcs
+3个地方change
+- CommonContants global.properties
+- COnfigUtils
+- Contants  DEFAULT_HESSIAN_OVERLOAD_METHOD
+
 ## 2.7.4.1
 
 ### Enhancement

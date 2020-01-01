@@ -54,12 +54,11 @@ import static org.apache.dubbo.common.constants.CommonConstants.DEFAULT_KEY;
 import static org.apache.dubbo.common.constants.CommonConstants.REMOVE_VALUE_PREFIX;
 
 /**
- *
  * {@link org.apache.dubbo.rpc.model.ApplicationModel}, {@code DubboBootstrap} and this class are
  * at present designed to be singleton or static (by itself totally static or uses some static fields).
  * So the instances returned from them are of process or classloader scope. If you want to support
  * multiple dubbo servers in a single process, you may need to refactor these three classes.
- *
+ * <p>
  * Load dubbo extensions
  * <ul>
  * <li>auto inject dependency extension </li>
@@ -107,11 +106,11 @@ public class ExtensionLoader<T> {
 
     private Map<String, IllegalStateException> exceptions = new ConcurrentHashMap<>();
 
-    private static LoadingStrategy DUBBO_INTERNAL_STRATEGY =  () -> DUBBO_INTERNAL_DIRECTORY;
+    private static LoadingStrategy DUBBO_INTERNAL_STRATEGY = () -> DUBBO_INTERNAL_DIRECTORY;
     private static LoadingStrategy DUBBO_STRATEGY = () -> DUBBO_DIRECTORY;
     private static LoadingStrategy SERVICES_STRATEGY = () -> SERVICES_DIRECTORY;
 
-    private static LoadingStrategy[] strategies = new LoadingStrategy[] { DUBBO_INTERNAL_STRATEGY, DUBBO_STRATEGY, SERVICES_STRATEGY };
+    private static LoadingStrategy[] strategies = new LoadingStrategy[]{DUBBO_INTERNAL_STRATEGY, DUBBO_STRATEGY, SERVICES_STRATEGY};
 
     public static void setLoadingStrategies(LoadingStrategy... strategies) {
         ExtensionLoader.strategies = strategies;
@@ -274,7 +273,11 @@ public class ExtensionLoader<T> {
                         usrs.clear();
                     }
                 } else {
-                    usrs.add(getExtension(name));
+                    try {
+                        usrs.add(getExtension(name));
+                    } catch (IllegalStateException e) {
+                        logger.error("扩展实例化插件时报错,名称：" + name + "，类型：" + type.getName());
+                    }
                 }
             }
         }
@@ -414,7 +417,7 @@ public class ExtensionLoader<T> {
      * @return non-null
      */
     public T getOrDefaultExtension(String name) {
-        return containsExtension(name)  ? getExtension(name) : getDefaultExtension();
+        return containsExtension(name) ? getExtension(name) : getDefaultExtension();
     }
 
     /**
@@ -722,7 +725,7 @@ public class ExtensionLoader<T> {
 
     /**
      * synchronized in getExtensionClasses
-     * */
+     */
     private Map<String, Class<?>> loadExtensionClasses() {
         cacheDefaultExtensionName();
 
@@ -768,7 +771,7 @@ public class ExtensionLoader<T> {
         try {
             Enumeration<java.net.URL> urls = null;
             ClassLoader classLoader = findClassLoader();
-            
+
             // try to load from ExtensionLoader's ClassLoader first
             if (extensionLoaderClassLoaderFirst) {
                 ClassLoader extensionLoaderClassLoader = ExtensionLoader.class.getClassLoader();
@@ -776,8 +779,8 @@ public class ExtensionLoader<T> {
                     urls = extensionLoaderClassLoader.getResources(fileName);
                 }
             }
-            
-            if(urls == null || !urls.hasMoreElements()) {
+
+            if (urls == null || !urls.hasMoreElements()) {
                 if (classLoader != null) {
                     urls = classLoader.getResources(fileName);
                 } else {

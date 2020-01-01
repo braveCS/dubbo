@@ -206,15 +206,55 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
         }
     }
 
+    private void fillDependencyComponents(){
+        if (provider != null) {
+            if (application == null) {
+                application = provider.getApplication();
+            }
+            if (module == null) {
+                module = provider.getModule();
+            }
+            if (registries == null) {
+                registries = provider.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = provider.getMonitor();
+            }
+            if (protocols == null) {
+                protocols = provider.getProtocols();
+            }
+        }
+        if (module != null) {
+            if (registries == null) {
+                registries = module.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = module.getMonitor();
+            }
+        }
+        if (application != null) {
+            if (registries == null) {
+                registries = application.getRegistries();
+            }
+            if (monitor == null) {
+                monitor = application.getMonitor();
+            }
+        }
+    }
+
     private void checkAndUpdateSubConfigs() {
         // Use default configs defined explicitly with global scope
         completeCompoundConfigs();
         checkDefault();
+        /**##CHANGE BY CN.FFCS##**/
+        fillDependencyComponents();
+        checkApplication();
         checkProtocol();
         // if protocol is not injvm checkRegistry
         if (!isOnlyInJvm()) {
             checkRegistry();
         }
+        appendProperties(this);
         this.refresh();
 
         if (StringUtils.isEmpty(interfaceName)) {

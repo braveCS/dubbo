@@ -25,7 +25,7 @@
     <artifactId>dubbo</artifactId>
     <packaging>jar</packaging>
     <name>dubbo-all</name>
-    <description>The all in one project of dubbo</description>
+    <description>The all in one project of dubbo，all in one， 不用一个一个添加dubbo-xxx-xxx依赖</description>
     <properties>
         <skip_maven_deploy>false</skip_maven_deploy>
     </properties>
@@ -40,6 +40,13 @@
         <dependency>
             <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-config-spring</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.dubbo</groupId>
+            <artifactId>dubbo-config-zookeeper</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -322,13 +329,6 @@
         </dependency>
         <dependency>
             <groupId>org.apache.dubbo</groupId>
-            <artifactId>dubbo-container-log4j</artifactId>
-            <version>${project.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.dubbo</groupId>
             <artifactId>dubbo-container-logback</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
@@ -552,6 +552,34 @@
             <artifactId>gson</artifactId>
         </dependency>
         <dependency>
+            <groupId>cn.ffcs</groupId>
+            <artifactId>hessian-sq</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-framework</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-x-discovery</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.curator</groupId>
+            <artifactId>curator-recipes</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
@@ -582,7 +610,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>1.4</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
@@ -591,12 +618,14 @@
                         </goals>
                         <configuration>
                             <createSourcesJar>true</createSourcesJar>
-                            <promoteTransitiveDependencies>false</promoteTransitiveDependencies>
+                            <createDependencyReducedPom>true</createDependencyReducedPom>
+                            <promoteTransitiveDependencies>true</promoteTransitiveDependencies>
                             <artifactSet>
                                 <includes>
                                     <include>com.alibaba:hessian-lite</include>
                                     <include>org.apache.dubbo:dubbo-config-api</include>
                                     <include>org.apache.dubbo:dubbo-config-spring</include>
+                                    <include>org.apache.dubbo:dubbo-config-zookeeper</include>
                                     <include>org.apache.dubbo:dubbo-compatible</include>
                                     <include>org.apache.dubbo:dubbo-common</include>
                                     <include>org.apache.dubbo:dubbo-remoting-api</include>
@@ -613,6 +642,7 @@
                                     <include>org.apache.dubbo:dubbo-rpc-http</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rmi</include>
                                     <include>org.apache.dubbo:dubbo-rpc-hessian</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-http-invoker</include>
                                     <include>org.apache.dubbo:dubbo-rpc-webservice</include>
                                     <include>org.apache.dubbo:dubbo-rpc-thrift</include>
                                     <include>org.apache.dubbo:dubbo-rpc-memcached</include>
@@ -637,7 +667,6 @@
                                     <include>org.apache.dubbo:dubbo-monitor-default</include>
                                     <include>org.apache.dubbo:dubbo-container-api</include>
                                     <include>org.apache.dubbo:dubbo-container-spring</include>
-                                    <include>org.apache.dubbo:dubbo-container-log4j</include>
                                     <include>org.apache.dubbo:dubbo-container-logback</include>
                                     <include>org.apache.dubbo:dubbo-qos</include>
                                     <include>org.apache.dubbo:dubbo-serialization-api</include>
@@ -869,6 +898,31 @@
                                 </filter>
                             </filters>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>flatten-maven-plugin</artifactId>
+                <version>${maven_flatten_version}</version>
+                <configuration>
+                    <updatePomFile>true</updatePomFile>
+                    <flattenMode>resolveCiFriendliesOnly</flattenMode>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flatten</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>flatten</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>flatten.clean</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

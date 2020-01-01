@@ -86,6 +86,17 @@
         <url>https://github.com/apache/dubbo/issues</url>
     </issueManagement>
 
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <url>http://192.168.52.125:8081/nexus/content/repositories/releases/</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <url>http://192.168.52.125:8081/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <properties>
         <!-- Test libs -->
         <junit_jupiter_version>5.4.0</junit_jupiter_version>
@@ -125,7 +136,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.6-SNAPSHOT</revision>
+        <revision>2.7.6-ffcs</revision>
     </properties>
 
     <modules>
@@ -406,6 +417,19 @@
         </resources>
         <plugins>
             <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven_source_version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven_jar_version}</version>
                 <configuration>
@@ -634,7 +658,7 @@
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>2.4.3</version>
                     <configuration>
-                        <createDependencyReducedPom>false</createDependencyReducedPom>
+                        <createDependencyReducedPom>true</createDependencyReducedPom>
                     </configuration>
                 </plugin>
                 <plugin>

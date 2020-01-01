@@ -26,6 +26,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -234,6 +236,19 @@ public class ConfigUtils {
             } catch (Throwable e) {
                 logger.warn("Failed to load " + fileName + " file from " + fileName + "(ignore this file): " + e.getMessage(), e);
             }
+
+            /**##CHANGE BY CN.FFCS##**/
+            for(String key : properties.stringPropertyNames()) {
+                properties.setProperty(key, properties.getProperty(key).trim());
+            }
+            String host="127.0.0.1";
+            try {
+                host = InetAddress.getLocalHost().getHostAddress();
+            } catch (UnknownHostException e) {
+                logger.warn(e.getMessage(), e);
+            }
+            properties.setProperty("dubbo.application.name", properties.getProperty("dubbo.application.name")+
+                    "-"+host+"-"+properties.getProperty("dubbo.protocol.port"));
             return properties;
         }
 

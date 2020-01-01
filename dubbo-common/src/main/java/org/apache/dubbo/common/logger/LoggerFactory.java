@@ -19,7 +19,6 @@ package org.apache.dubbo.common.logger;
 import org.apache.dubbo.common.extension.ExtensionLoader;
 import org.apache.dubbo.common.logger.jcl.JclLoggerAdapter;
 import org.apache.dubbo.common.logger.jdk.JdkLoggerAdapter;
-import org.apache.dubbo.common.logger.log4j.Log4jLoggerAdapter;
 import org.apache.dubbo.common.logger.log4j2.Log4j2LoggerAdapter;
 import org.apache.dubbo.common.logger.slf4j.Slf4jLoggerAdapter;
 import org.apache.dubbo.common.logger.support.FailsafeLogger;
@@ -49,9 +48,6 @@ public class LoggerFactory {
             case "jcl":
                 setLoggerAdapter(new JclLoggerAdapter());
                 break;
-            case "log4j":
-                setLoggerAdapter(new Log4jLoggerAdapter());
-                break;
             case "jdk":
                 setLoggerAdapter(new JdkLoggerAdapter());
                 break;
@@ -60,7 +56,6 @@ public class LoggerFactory {
                 break;
             default:
                 List<Class<? extends LoggerAdapter>> candidates = Arrays.asList(
-                        Log4jLoggerAdapter.class,
                         Slf4jLoggerAdapter.class,
                         Log4j2LoggerAdapter.class,
                         JclLoggerAdapter.class,

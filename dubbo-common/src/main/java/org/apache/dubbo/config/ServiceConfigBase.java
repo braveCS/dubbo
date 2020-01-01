@@ -199,6 +199,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public void checkDefault() {
         createProviderIfAbsent();
+        appendProperties(provider);
     }
 
     private void createProviderIfAbsent() {
@@ -221,6 +222,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
             setProtocols(provider.getProtocols());
         }
         convertProtocolIdsToProtocols();
+        /**##CHANGE BY CN.FFCS##**/
+        for (ProtocolConfig protocolConfig : protocols) {
+            appendProperties(protocolConfig);
+        }
     }
 
     public void completeCompoundConfigs() {

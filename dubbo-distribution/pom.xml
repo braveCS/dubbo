@@ -25,7 +25,7 @@
     <artifactId>dubbo-distribution</artifactId>
     <packaging>pom</packaging>
     <name>dubbo-distribution</name>
-    <description>The binary distribution module for dubbo temporarily</description>
+    <description>The binary distribution module for dubbo temporarily，发行版，包含demo工程</description>
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>

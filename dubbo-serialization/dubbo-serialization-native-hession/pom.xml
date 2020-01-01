@@ -36,8 +36,8 @@ limitations under the License.
             <version>${project.parent.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.caucho</groupId>
-            <artifactId>hessian</artifactId>
+            <groupId>cn.ffcs</groupId>
+            <artifactId>hessian-sq</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -18,6 +18,7 @@ package org.apache.dubbo.config;
 
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.Version;
+import org.apache.dubbo.common.constants.CommonConstants;
 import org.apache.dubbo.common.utils.Assert;
 import org.apache.dubbo.common.utils.CollectionUtils;
 import org.apache.dubbo.common.utils.ConfigUtils;
@@ -188,6 +189,33 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         }
     }
 
+
+    @SuppressWarnings("deprecation")
+    protected void checkApplication() {
+        // for backward compatibility
+        if (application == null) {
+            String applicationName = ConfigUtils.getProperty("dubbo.application.name");
+            if (applicationName != null && applicationName.length() > 0) {
+                application = new ApplicationConfig();
+            }
+        }
+        if (application == null) {
+            throw new IllegalStateException(
+                    "No such application config! Please add <dubbo:application name=\"...\" /> to your spring config.");
+        }
+        appendProperties(application);
+
+        String wait = ConfigUtils.getProperty(CommonConstants.SHUTDOWN_WAIT_KEY);
+        if (wait != null && wait.trim().length() > 0) {
+            System.setProperty(CommonConstants.SHUTDOWN_WAIT_KEY, wait.trim());
+        } else {
+            wait = ConfigUtils.getProperty(CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY);
+            if (wait != null && wait.trim().length() > 0) {
+                System.setProperty(CommonConstants.SHUTDOWN_WAIT_SECONDS_KEY, wait.trim());
+            }
+        }
+    }
+
     public static void appendRuntimeParameters(Map<String, String> map) {
         map.put(DUBBO_VERSION_KEY, Version.getProtocolVersion());
         map.put(RELEASE_KEY, Version.getVersion());
@@ -272,6 +300,22 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
 
     private void convertRegistryIdsToRegistries() {
         computeValidRegistryIds();
+
+        ///**##CHANGE BY CN.FFCS##**/
+        // for backward compatibility
+        if (registries == null || registries.isEmpty()) {
+            String address = ConfigUtils.getProperty("dubbo.registry.address");
+            if (address != null && address.length() > 0) {
+                registries = new ArrayList<RegistryConfig>();
+                String[] as = address.split("\\s*[|]+\\s*");
+                for (String a : as) {
+                    RegistryConfig registryConfig = new RegistryConfig();
+                    registryConfig.setAddress(a);
+                    registries.add(registryConfig);
+                }
+            }
+        }
+
         if (StringUtils.isEmpty(registryIds)) {
             if (CollectionUtils.isEmpty(registries)) {
                 List<RegistryConfig> registryConfigs = ApplicationModel.getConfigManager().getDefaultRegistries();
@@ -308,6 +352,10 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
             setRegistries(tmpRegistries);
         }
 
+        /**##CHANGE BY CN.FFCS##**/
+        for (RegistryConfig registryConfig : registries) {
+            appendProperties(registryConfig);
+        }
     }
 
     public void completeCompoundConfigs(AbstractInterfaceConfig interfaceConfig) {

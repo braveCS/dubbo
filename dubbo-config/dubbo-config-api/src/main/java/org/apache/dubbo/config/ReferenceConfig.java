@@ -376,6 +376,7 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
         }
         // get consumer's global configuration
         checkDefault();
+        appendProperties(this);
         this.refresh();
         if (getGeneric() == null && getConsumer() != null) {
             setGeneric(getConsumer().getGeneric());

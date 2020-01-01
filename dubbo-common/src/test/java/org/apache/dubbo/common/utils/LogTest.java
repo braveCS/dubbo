@@ -17,8 +17,8 @@
 
 package org.apache.dubbo.common.utils;
 
-import org.apache.log4j.Level;
 import org.junit.jupiter.api.Test;
+import org.slf4j.event.Level;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -35,8 +35,8 @@ public class LogTest {
     @Test
     public void testLogLevel() throws Exception {
         Log log = new Log();
-        log.setLogLevel(Level.ALL);
-        assertThat(log.getLogLevel(), is(Level.ALL));
+        log.setLogLevel(Level.TRACE);
+        assertThat(log.getLogLevel(), is(Level.TRACE));
     }
 
     @Test

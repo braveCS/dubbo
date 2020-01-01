@@ -28,7 +28,8 @@ public interface Constants {
 
     String HESSIAN_OVERLOAD_METHOD_KEY = "hessian.overload.method";
 
-    boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = false;
+    /**##CHANGE BY CN.FFCS##**/
+    boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = true;
 
     String DEFAULT_HTTP_CLIENT = "jdk";
 

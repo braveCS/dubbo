@@ -31,7 +31,7 @@
     <packaging>pom</packaging>
 
     <name>dubbo-dependencies-bom</name>
-    <description>Dubbo dependencies BOM</description>
+    <description>Dubbo dependencies BOM，Maven BOM(Bill Of Materials) ，统一定义了 Dubbo 依赖的三方库的版本号</description>
     <url>https://github.com/apache/dubbo</url>
     <inceptionYear>2011</inceptionYear>
     <licenses>
@@ -95,8 +95,8 @@
         <netty4_version>4.1.25.Final</netty4_version>
         <mina_version>1.1.7</mina_version>
         <grizzly_version>2.1.4</grizzly_version>
-        <httpclient_version>4.5.3</httpclient_version>
-        <httpcore_version>4.4.6</httpcore_version>
+        <httpclient_version>4.5.8</httpclient_version>
+        <httpcore_version>4.4.11</httpcore_version>
         <fastjson_version>1.2.60</fastjson_version>
         <zookeeper_version>3.4.13</zookeeper_version>
         <curator_version>4.0.1</curator_version>
@@ -108,7 +108,7 @@
         <xmemcached_version>1.3.6</xmemcached_version>
         <cxf_version>3.1.15</cxf_version>
         <thrift_version>0.12.0</thrift_version>
-        <hessian_version>4.0.38</hessian_version>
+        <hessian_version>4.0.37</hessian_version>
         <protobuf-java_version>3.6.0</protobuf-java_version>
         <servlet_version>3.1.0</servlet_version>
         <jetty_version>9.4.11.v20180605</jetty_version>
@@ -132,11 +132,10 @@
         <nacos_version>1.1.1</nacos_version>
         <grpc.version>1.22.1</grpc.version>
         <!-- Log libs -->
-        <slf4j_version>1.7.25</slf4j_version>
+        <slf4j_version>1.7.26</slf4j_version>
         <jcl_version>1.2</jcl_version>
-        <log4j_version>1.2.16</log4j_version>
         <logback_version>1.2.2</logback_version>
-        <log4j2_version>2.11.1</log4j2_version>
+        <log4j2_version>2.8.2</log4j2_version>
         <commons_io_version>2.6</commons_io_version>
 
         <embedded_redis_version>0.6</embedded_redis_version>
@@ -150,6 +149,7 @@
         <jaxb_version>2.2.7</jaxb_version>
         <activation_version>1.2.0</activation_version>
         <test_container_version>1.11.2</test_container_version>
+        <junit_version>4.12</junit_version>
         <etcd_launcher_version>0.3.0</etcd_launcher_version>
         <hessian_lite_version>3.2.6</hessian_lite_version>
         <swagger_version>1.5.19</swagger_version>
@@ -162,7 +162,7 @@
         <mortbay_jetty_version>6.1.26</mortbay_jetty_version>
         <portlet_version>2.0</portlet_version>
         <maven_flatten_version>1.1.0</maven_flatten_version>
-        <revision>2.7.6-SNAPSHOT</revision>
+        <revision>2.7.6-ffcs</revision>
     </properties>
 
     <dependencyManagement>
@@ -220,6 +220,14 @@
                 <artifactId>zookeeper</artifactId>
                 <version>${zookeeper_version}</version>
                 <exclusions>
+                    <exclusion>
+                        <artifactId>slf4j-log4j12</artifactId>
+                        <groupId>org.slf4j</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>log4j</artifactId>
+                        <groupId>log4j</groupId>
+                    </exclusion>
                     <exclusion>
                         <groupId>io.netty</groupId>
                         <artifactId>netty</artifactId>
@@ -309,8 +317,8 @@
                 <version>${thrift_version}</version>
             </dependency>
             <dependency>
-                <groupId>com.caucho</groupId>
-                <artifactId>hessian</artifactId>
+                <groupId>cn.ffcs</groupId>
+                <artifactId>hessian-sq</artifactId>
                 <version>${hessian_version}</version>
             </dependency>
             <dependency>
@@ -482,14 +490,14 @@
                 <version>${commons_io_version}</version>
             </dependency>
             <dependency>
-                <groupId>log4j</groupId>
-                <artifactId>log4j</artifactId>
-                <version>${log4j_version}</version>
-            </dependency>
-            <dependency>
                 <groupId>ch.qos.logback</groupId>
                 <artifactId>logback-classic</artifactId>
                 <version>${logback_version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-slf4j-impl</artifactId>
+                <version>${log4j2_version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
@@ -619,6 +627,12 @@
                 <groupId>com.github.kstyrc</groupId>
                 <artifactId>embedded-redis</artifactId>
                 <version>${embedded_redis_version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit_version}</version>
                 <scope>test</scope>
             </dependency>
             <dependency>
