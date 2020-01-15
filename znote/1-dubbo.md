@@ -210,21 +210,6 @@ jenkinsfile里有写
    2. 将dependency分类，每一类建立单独的pom文件3、在需要使用到这些依赖的子model中，使用dependencyManagement管理依赖，并import scope依赖
    3. 注意：scope=import只能用在dependencyManagement里面,且仅用于type=pom的dependency
 
-## 升级步骤
-
-1. 路由规则？===
-
-2. 配置规则？==
-
-3. 优雅停机
-
-   
-
-   可以获取到应用版本号
-
-2. tomcat 多context 参数配置
-
-
 
 # 参考
 
@@ -244,8 +229,6 @@ jenkinsfile里有写
 4. 
 
 # git操作
-
-密钥密码： seajoe0417
 
 1. fork 原始仓库
 2. clone 自己的仓库
