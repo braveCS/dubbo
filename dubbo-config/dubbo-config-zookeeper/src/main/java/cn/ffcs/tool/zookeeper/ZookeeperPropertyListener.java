@@ -1,6 +1,8 @@
 package cn.ffcs.tool.zookeeper;
 
-import org.apache.zookeeper.KeeperException;
+import org.apache.logging.log4j.core.lookup.Interpolator;
+import org.apache.logging.log4j.core.lookup.MapLookup;
+import org.apache.logging.log4j.core.lookup.StrSubstitutor;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 import org.apache.zookeeper.ZooKeeper.States;
@@ -11,6 +13,10 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.ContextLoaderListener;
 
+import javax.management.MBeanServer;
+import javax.management.MBeanServerFactory;
+import javax.management.ObjectName;
+import javax.management.Query;
 import javax.servlet.ServletContextEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -21,14 +27,17 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.io.StringReader;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 
 /**
@@ -55,37 +64,36 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
     private String environmentName;
     private String applicationName;
     private String zookeeperUrl;
-    private List<String> commonConfPathList = new ArrayList<String>();
+    private List<String> commonConfPathList = new ArrayList<>();
 
     private ZooKeeper zk;
     private Properties properties = new Properties();
+    private String contextPath;
 
-
-    private void doContextInitialized(ServletContextEvent event){
-        checkConfigItems();
-        /*try {
-            SysVM.init();
-        } catch (Exception e) {
-            logger.error("证书校验失败",e);
-            System.exit(1);
-            return;
-        }*/
-        super.contextInitialized(event);
-    }
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
-        if (environmentName == null)
-            environmentName = getConfigParameter(ENVIRONMENT_NAME, null);
-        if (applicationName == null)
-            applicationName = getConfigParameter(APPLICATION_NAME, null);
-        if (zookeeperUrl == null)
+
+        if (StringUtils.isEmpty(zookeeperUrl)) {
             zookeeperUrl = getConfigParameter(ZOOKEEPER_URL, null);
+        }
+        if (StringUtils.isEmpty(environmentName)) {
+            environmentName = getConfigParameter(ENVIRONMENT_NAME, null);
+        }
+        if (StringUtils.isEmpty(applicationName)) {
+            applicationName = getConfigParameter(APPLICATION_NAME, null);
+        }
 
+        contextPath = event.getServletContext().getContextPath();
+        if (!StringUtils.isEmpty(contextPath)) {
+            contextPath = contextPath.substring(1);
+        }
 
-        if (applicationName == null || applicationName.length() == 0
-                || environmentName == null || environmentName.length() == 0
-                || zookeeperUrl == null || zookeeperUrl.length() == 0) {
+        if (StringUtils.isEmpty(applicationName)) {
+            applicationName = contextPath;
+        }
+
+        if (StringUtils.isEmpty(applicationName) || StringUtils.isEmpty(environmentName) || StringUtils.isEmpty(zookeeperUrl)) {
             megerLocalProperties();
             logger.info("使用本地配置文件global.properties");
             doContextInitialized(event);
@@ -95,13 +103,11 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         try {
             connectToZK();
 
-            //0)获取公共配置节点的数据
-            initCommonConfPaths();
-            for (String commonNode : commonConfPathList)
-                addZKNodeProperties("/" + environmentName + "/" + commonNode);
-
-            //1)获取指定节点的数据,读取本级节点的配置信息
-            addZKNodeProperties("/" + environmentName + "/" + applicationName);
+            if (CollectionUtils.isEmpty(commonConfPathList)) {
+                commonConfPathList = Arrays.asList(getConfigParameter(COMMON_CONF, COMMON_CONF_DEFAULT).split(","));
+            }
+            ZKPropertiesLoader zkPropertiesLoader = new ZKPropertiesLoader(zk, environmentName, applicationName, contextPath, commonConfPathList);
+            properties = zkPropertiesLoader.loadProperties();
 
             overWriterGlobalProperties();
             //megerLocalProperties(properties);
@@ -113,96 +119,6 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         doContextInitialized(event);
     }
 
-    /**
-     * 校验配置项是否完整，配置项放在classpath:global.txt,用回车分隔配置项
-     */
-    private void checkConfigItems() {
-        if (properties == null)
-            return;
-
-        List<String> miss = new ArrayList<String>();
-        Properties configProp = new Properties();
-        try {
-            File file = getResourceAsFile(CONFIG_ITEM_FILE);
-            logger.info("检验的配置文件：{}", file);
-            if (!file.exists())
-                return;
-
-            FileReader fr = new FileReader(file);
-            configProp.load(fr);
-            Enumeration<Object> configKeys = configProp.keys();
-            String key;
-            while (configKeys.hasMoreElements()) {
-                key = (String) configKeys.nextElement();
-                if (!properties.containsKey(key))
-                    miss.add(key);
-            }
-            fr.close();
-        } catch (IOException e) {
-            logger.warn("IOException#########################{}", e.getMessage());
-        }
-
-        if (CollectionUtils.isEmpty(miss))
-            return;
-        for (String item : miss)
-            logger.error("没有配置：{}={} ", item, configProp.getProperty(item));
-        System.exit(1);
-    }
-
-    private void addZKNodeProperties(String path) {
-        String content;
-        try {
-            content = new String(zk.getData(path, false, null), "UTF-8");
-            addProperty(path, content);
-
-            //获取指定节点的子节点的数据
-            List<String> children = zk.getChildren(path, false);
-            for (String node : children)
-                addZKNodeProperties(path + "/" + node);
-
-        } catch (UnsupportedEncodingException e) {
-            logger.info("{}:不支持zookeeper上的配置内容的字符", path);
-        } catch (KeeperException e) {
-            logger.info("{}:获取zookeeper配置时不存在:{}", path, path);
-        } catch (InterruptedException e) {
-            logger.error(e.toString(), e);
-        }
-
-    }
-
-    /**
-     * 链接zk， 阻塞的，不成功返回null
-     */
-    private void connectToZK() {
-        if (zookeeperUrl == null || zookeeperUrl.length() == 0)
-            return;
-        //准备链接zk
-        CountDownLatch connectedLatch = new CountDownLatch(1);
-        Watcher watcher = new ConnectedWatcher(connectedLatch);
-        try {
-            zk = new ZooKeeper(zookeeperUrl, 3000, watcher);
-            waitUntilConnected(zk, connectedLatch);
-            logger.info("与ZooKeeper服务器{} 连接成功 ", zookeeperUrl);
-        } catch (IOException e) {
-            logger.info("与ZooKeeper服务器 {} 连接失败 ", zookeeperUrl);
-        }
-    }
-
-    private void addProperty(String nodeName, String value) {
-        if (value == null || value.length() == 0) {
-            logger.info("节点{}没有配置信息", nodeName);
-            return;
-        }
-        try {
-            logger.info("节点{}的配置信息是:{}", nodeName, value);
-            if (value.indexOf('=') > 1)
-                properties.load(new StringReader(value));
-            else
-                properties.put(StringUtils.getFilename(nodeName), value);
-        } catch (IOException ex) {
-            logger.error("加载节点上的配置信息为properties失败");
-        }
-    }
 
     /**
      * 写入到global.properties文件里
@@ -214,10 +130,13 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
             File file = getResourceAsFile(PROPERTIES_FILE);
             logger.info("重写的文件：{}", file);
             if (!file.exists())
-                logger.info(file.createNewFile()?"创建global.properties":"修改global.properties");
+                logger.info("{}global.properties", file.createNewFile() ? "创建" : "修改");
 
             //一些额外的属性
             appendSomeProcessProperties();
+
+            //4. 占位符， 插值 ${env, system:} 类似log4j2 加密   ENC()
+            parseProperties();
 
             //保存
             bw = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
@@ -229,9 +148,7 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         }
     }
 
-    /**
-     * 合并本地的global.properties并保存，并增加一些额外的参数
-     */
+    /*** 合并本地的global.properties并保存，并增加一些额外的参数*/
     private void megerLocalProperties() {
 
         BufferedReader br = null;
@@ -242,13 +159,16 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
             logger.info("合并本地的文件：{}", file);
 
             if (!file.exists())
-                logger.info(file.createNewFile()?"创建global.properties":"修改global.properties");
+                logger.info("{}global.properties", file.createNewFile() ? "创建" : "修改");
             else {
                 br = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
                 properties.load(br);
             }
 
             appendSomeProcessProperties();
+
+            //4. 占位符， 插值 ${env, system:} 类似log4j2 加密   ENC()
+            parseProperties();
 
             //保存
             osw = new OutputStreamWriter(new FileOutputStream(file));
@@ -258,10 +178,6 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
             IOUtils.closeStream(osw);
             IOUtils.closeStream(br);
         }
-    }
-
-    private File getResourceAsFile(String resource) {
-        return new File(Thread.currentThread().getContextClassLoader().getResource("").getPath() + resource);
     }
 
     /**
@@ -275,9 +191,14 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         String devProduct = properties.getProperty("dubbo.zookeeper.id");
         String devSubscribe = properties.getProperty(subscribe);
         String devRegister = properties.getProperty(register);
+        String resolveFile = properties.getProperty("dubbo.resolve.file");
 
         if ("product".equals(devProduct)) {
             properties.setProperty(subscribe, "false");
+            properties.setProperty(register, "false");
+        } else if (resolveFile != null && resolveFile.endsWith(".properties")) {  //判断是否走直连
+            System.setProperty("dubbo.resolve.file", resolveFile);
+            properties.setProperty(subscribe, "true");  //消费者如果直连配置文件里有配置就不会去注册了，没有配置的还会走注册
             properties.setProperty(register, "false");
         } else {
             if (devSubscribe == null || devSubscribe.length() == 0)
@@ -299,31 +220,63 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         if (springProfile != null && springProfile.trim().length() > 0)
             System.setProperty("spring.profiles.active", springProfile.trim());
 
-    }
-
-    /**
-     * 获取参数值，查找顺序：环境变量，虚拟机变量，默认值
-     */
-    public String getConfigParameter(String key, String defaultValue) {
-        String res;
-        res = System.getenv(key);
-        if (res == null || res.length() == 0) {
-            res = System.getProperty(key);
-            if (res == null || res.length() == 0)
-                res = defaultValue;
+        //设置默认的元数据中心
+        String metadataAddr = properties.getProperty("dubbo.zookeeper.address.metadata");
+        if (metadataAddr == null && zookeeperUrl != null) {
+            properties.put("dubbo.zookeeper.address.metadata", "zookeeper://" + zookeeperUrl);
         }
-        return res;
+
+        //识别tomcat上下文，自动补全contextpath
+        String protoclContextpath = properties.getProperty("dubbo.protocol.contextpath");
+        if (!StringUtils.isEmpty(contextPath)) {
+            if (!StringUtils.isEmpty(protoclContextpath) && !protoclContextpath.startsWith(contextPath)) {
+                properties.put("dubbo.protocol.contextpath", contextPath + "/" + StringUtils.trimLeadingCharacter(protoclContextpath, '/'));
+            }
+        }
+
+        //自动识别端口，并重写端口配置信息
+        try {
+            MBeanServer server = null;
+            if (!CollectionUtils.isEmpty(MBeanServerFactory.findMBeanServer(null))) {
+                server = MBeanServerFactory.findMBeanServer(null).get(0);
+            }
+
+            if (server != null) {
+                Set names = server.queryNames(new ObjectName("Catalina:type=Connector,*"),
+                        Query.match(Query.attr("protocol"), Query.value("HTTP/1.1")));
+
+                Iterator iterator = names.iterator();
+                if (iterator.hasNext()) {
+                    ObjectName name = (ObjectName) iterator.next();
+                    properties.put("dubbo.protocol.port", server.getAttribute(name, "port").toString());
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("可能不是tomcat所以暂时不能自动获取到端口");
+        }
+
     }
 
-    /**
-     * 增加公共配置的路径，默认不配置使用"common-conf",有配置可用common-conf=xxx,xxx配置
-     */
-    public void initCommonConfPaths() {
-        if (!CollectionUtils.isEmpty(commonConfPathList))
-            return;
 
-        String commonConf = getConfigParameter(COMMON_CONF, COMMON_CONF_DEFAULT);
-        commonConfPathList = Arrays.asList(commonConf.split(","));
+    //=======================================================================================================
+
+
+    /**
+     * 链接zk， 阻塞的，不成功返回null
+     */
+    private void connectToZK() {
+        if (zookeeperUrl == null || zookeeperUrl.length() == 0)
+            return;
+        //准备链接zk
+        CountDownLatch connectedLatch = new CountDownLatch(1);
+        Watcher watcher = new ConnectedWatcher(connectedLatch);
+        try {
+            zk = new ZooKeeper(zookeeperUrl, 3000, watcher);
+            waitUntilConnected(zk, connectedLatch);
+            logger.info("与ZooKeeper服务器{} 连接成功 ", zookeeperUrl);
+        } catch (IOException e) {
+            logger.info("与ZooKeeper服务器 {} 连接失败 ", zookeeperUrl);
+        }
     }
 
     private static void waitUntilConnected(ZooKeeper zooKeeper, CountDownLatch connectedLatch) {
@@ -336,27 +289,116 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         }
     }
 
-    public static void main(String[] args) {
-        ZookeeperPropertyListener zklistener = new ZookeeperPropertyListener();
-        /*兼容以前的
-         * zklistener.setEnvironmentName("zookeeper");
-    	zklistener.setApplicationName("quota");*/
+    /**
+     * 至此配置参数个数是完整的，剩下：验证&启动初始化
+     */
+    private void doContextInitialized(ServletContextEvent event) {
+        //5. 验证功能global.txt
+        checkConfigItems();
 
-    	/*兼容以前的*/
-        /*zklistener.setApplicationName("sq-uam2");*/
+        //6. 启动初始化
+        super.contextInitialized(event);
+    }
 
-        /*	zklistener.setApplicationName("sq_uam_portal");
-        zklistener.setCommonConfPathList(Arrays.asList("common-db","common-other"));*/
 
-    	/*zklistener.setApplicationName("sq-uam");
-        zklistener.setCommonConfPathList(Arrays.asList("common-db","common-other"));*/
+    /**
+     * 占位符， 插值 ${env, system:} 类似log4j2 加密   ENC()
+     */
+    private void parseProperties() {
 
-    	/*中文乱码*/
-        zklistener.setApplicationName("sq-uam2");
+        Map<String, String> paramMap = new HashMap<>();
+        Set<String> keys = properties.stringPropertyNames();
 
-        zklistener.setEnvironmentName("dev");
-        zklistener.setZookeeperUrl("192.168.52.125:2181");
-        zklistener.contextInitialized(null);
+        //第一轮替换，基本替换
+        StrSubstitutor log4jSubstitutor = new StrSubstitutor(new Interpolator(paramMap));
+        substitutorProperties(keys, paramMap, log4jSubstitutor);
+
+        //第二轮替换，解密
+        Interpolator encInterpolator = new Interpolator(new MapLookup(paramMap), Collections.singletonList("cn.ffcs.tool.zookeeper.util"));
+        StrSubstitutor encSubstitutor = new StrSubstitutor(encInterpolator);
+        substitutorProperties(keys, paramMap, encSubstitutor);
+
+        //第二轮替换，完整
+        substitutorProperties(keys, paramMap, log4jSubstitutor);
+    }
+
+    private void substitutorProperties(Set<String> keys, Map<String, String> paramMap, StrSubstitutor substitutor) {
+        Set<String> needParseKeys = new HashSet<>();
+        keys.forEach(key -> {
+            String value = properties.getProperty(key);
+            if (!value.contains("${")) {
+                paramMap.put(key, value);
+            } else {
+                needParseKeys.add(key);
+            }
+        });
+
+        needParseKeys.forEach(key -> {
+            String value = properties.getProperty(key);
+            if (value.contains("${")) {
+                value = substitutor.replace(value);
+                properties.put(key, value);
+                paramMap.put(key, value);
+            }
+        });
+    }
+
+
+    /**
+     * 校验配置项是否完整，配置项放在classpath:global.txt,用回车分隔配置项
+     */
+    private void checkConfigItems() {
+        if (properties == null)
+            return;
+
+        List<String> miss = new ArrayList<>();
+        Properties configProp = new Properties();
+        try {
+            File file = getResourceAsFile(CONFIG_ITEM_FILE);
+            logger.info("检验的配置文件：{}", file);
+            if (!file.exists())
+                return;
+
+            FileReader fr = new FileReader(file);
+            configProp.load(fr);
+            Enumeration<Object> configKeys = configProp.keys();
+            String key;
+            while (configKeys.hasMoreElements()) {
+                key = (String) configKeys.nextElement();
+                if (!properties.containsKey(key))
+                    miss.add(key);
+            }
+            fr.close();
+        } catch (IOException e) {
+            logger.warn("IOException#########################{}", e.getMessage());
+        }
+
+        if (CollectionUtils.isEmpty(miss)) {
+            return;
+        }
+
+        for (String item : miss) {
+            logger.error("没有配置：{}={} ", item, configProp.getProperty(item));
+        }
+        System.exit(1);
+    }
+
+    /**
+     * 获取参数值，查找顺序：环境变量，虚拟机变量，默认值
+     */
+    private String getConfigParameter(String key, String defaultValue) {
+        String res;
+        res = System.getenv(key);
+        if (res == null || res.length() == 0) {
+            res = System.getProperty(key);
+            if (res == null || res.length() == 0)
+                res = defaultValue;
+        }
+        return res;
+    }
+
+    private File getResourceAsFile(String resource) {
+        return new File(Thread.currentThread().getContextClassLoader().getResource("").getPath() + resource);
     }
 
     public String getEnvironmentName() {

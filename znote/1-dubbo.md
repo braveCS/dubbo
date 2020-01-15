@@ -212,77 +212,17 @@ jenkinsfile里有写
 
 ## 升级步骤
 
-1. 替换调整pom依赖
+1. 路由规则？===
 
-```xml
-<dependency>
-    <groupId>org.apache.dubbo</groupId>
-    <artifactId>dubbo</artifactId>
-    <version>2.7.5-ffcs</version>
-</dependency>
-```
+2. 配置规则？==
 
-2. 简化dubbo配置，使用公共的配置xml
+3. 优雅停机
 
-```xml
+   
 
-	<!--应用信息，版本，负责人-->
-	<dubbo:application name="sq-edi-console"  owner="limz" version="v4.4.017" />
+   可以获取到应用版本号
 
-	<!--协议，端口，tomcat的servlet -->
-	<dubbo:protocol name="hessian" server="servlet"
-					contextpath="${dubbo.protocol.contextpath:dubbo}"
-					port="${dubbo.protocol.port:8090}"/>
-
-	<!--全局的提供者配置-->
-	<dubbo:provider version="${dubbo.service.version:7.0}"
-					cluster="${dubbo.provider.cluster:failfast}"
-					filter="${dubbo.provider.filter:default,-monitor}"
-					timeout="${dubbo.provider.timeout:30000}"/>
-
-	<!--全局的消费者配置-->
-	<dubbo:consumer version="${dubbo.reference.version:7.0}"
-					cluster="${dubbo.consumer.cluster:failfast}"
-					filter="${dubbo.consumer.filter:default,-monitor}"
-					check="${dubbo.consumer.check:false}"
-					timeout="${dubbo.consumer.timeout:30000}"/>
-
-	<!--注册中心配置-->
-	<dubbo:registry address="${dubbo.zookeeper.address}" check="false" id="product"/>
-	<dubbo:registry address="zookeeper://127.0.0.1:2181" check="false" id="dev"
-					register="${dubbo.registry.dev.register}"
-					subscribe="${dubbo.registry.dev.subscribe}" />
-
-```
-
-3. 动态配置中心不走外部化配置，只用服务治理的配置：（todo），外部化还是使用zkweb(升级版)弄一个简单的配置
-   1. **-Ddubbo.config-center.highest-priority**=false
-4. 直连提供者：通过文件映射，消费者直连服务提供者，识别Ddubbo.resolve.file，把本地的注册中心弄成不订阅，不注册
-5. 支持参数回调方法？
-6. 支持事件通知？
-7. 是否支持本地存根stub，验证校验&错误值处理？
-8. 本地伪装mock？服务降级
-9. 令牌验证？
-10. 路由规则？===
-11. 配置规则？==
-12. 优雅停机
-13. 元数据中心
-14. telnet, qos？
-15. url直连 本地开发 开发环境开发切换：-Ddubbo.resolve.file
-16. 兼容2.6  simplified="true" 配置元数据中心，服务治理规则？？
-17. dubbo-admin：Dubbo Ops服务搜索，服务治理，服务测试=====
-18. hessian上下文？？？？？ hessian的 DEFAULT_EXCHANGER   RpcContext上下文 
-19. 链路追踪：Skywalking 6.1 [如何使用 SkyWalking 给 Dubbo 服务做链路追踪？](https://mp.weixin.qq.com/s?__biz=MzUzMTA2NTU2Ng==&mid=2247485817&idx=1&sn=559522ae18e1f146aa64d35a41c82114&chksm=fa4976c8cd3effde0329aab7f4d39e2fb916452a917b1c037a0eefe63b10761c6490014532c4&scene=0#rd)
-
-[升级与可能的兼容性问题总结](http://dubbo.apache.org/zh-cn/docs/user/versions/version-270.html)
-
-1. 可以获取到应用版本号
 2. tomcat 多context 参数配置
-3. 注册中心线上线下
-
-新版zkweb
-
-
 
 
 
@@ -314,7 +254,7 @@ jenkinsfile里有写
 5. 本地 dev 提交
 6. 切换 master 分支，同步原始仓库：git checkout master， git pull upstream master
 7. 切换本地 dev 分支，合并本地 master 分支（已经和原始仓库同步），可能需要解冲突
-8. 
+8.  git push origin test-pr
 9. 提交本地 dev 分支到自己的远程 dev 仓库
 10. 现在才是给原始仓库发 pull request 请求
 11. 等待原作者回复（接受/拒绝）

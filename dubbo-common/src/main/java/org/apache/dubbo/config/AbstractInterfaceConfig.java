@@ -504,6 +504,13 @@ public abstract class AbstractInterfaceConfig extends AbstractMethodConfig {
         return ApplicationModel.getConfigManager().getApplicationOrElseThrow();
     }
 
+    public ApplicationConfig getTempApplication() {
+        if (application != null) {
+            return application;
+        }
+        return ApplicationModel.getConfigManager().getApplication().orElse(null);
+    }
+
     @Deprecated
     public void setApplication(ApplicationConfig application) {
         this.application = application;

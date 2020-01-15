@@ -29,10 +29,11 @@ import org.apache.dubbo.metadata.MetadataServiceExporter;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Collections.emptyList;
-import static org.apache.dubbo.common.constants.CommonConstants.DUBBO;
 
 /**
  * {@link MetadataServiceExporter} implementation based on {@link ConfigManager Dubbo configurations}, the clients
@@ -119,11 +120,18 @@ public class ConfigurableMetadataServiceExporter implements MetadataServiceExpor
     }
 
     private ProtocolConfig generateMetadataProtocol() {
-        ProtocolConfig defaultProtocol = new ProtocolConfig();
-        defaultProtocol.setName(DUBBO);
-        // defaultProtocol.setHost() ?
-        // auto-increment port
-        defaultProtocol.setPort(-1);
-        return defaultProtocol;
+        Collection<ProtocolConfig> protocolConfigs=ApplicationModel.getConfigManager().getProtocols();
+        Optional<ProtocolConfig> serlvetProtocol=protocolConfigs.stream().filter(pf->"servlet".equalsIgnoreCase(pf.getServer())).findFirst();
+        return serlvetProtocol.orElseGet(()->{
+            if(protocolConfigs.isEmpty()){
+                ProtocolConfig defaultProtocol = new ProtocolConfig();
+                defaultProtocol.setName("hessian");
+                defaultProtocol.setPort(-1);
+                return defaultProtocol;
+            }else{
+                return protocolConfigs.stream().findFirst().get();
+            }
+        });
+
     }
 }

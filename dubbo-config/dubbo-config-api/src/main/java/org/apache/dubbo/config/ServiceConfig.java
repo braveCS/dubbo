@@ -332,6 +332,14 @@ public class ServiceConfig<T> extends ServiceConfigBase<T> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void doExportUrls() {
+        //在这之前要先把group,version给补齐
+        if(this.group==null&&this.provider!=null){
+            this.group=this.provider.getGroup();
+        }
+        if(this.version==null&&this.provider!=null){
+            this.version=this.provider.getVersion();
+        }
+
         ServiceRepository repository = ApplicationModel.getServiceRepository();
         ServiceDescriptor serviceDescriptor = repository.registerService(getInterfaceClass());
         repository.registerProvider(

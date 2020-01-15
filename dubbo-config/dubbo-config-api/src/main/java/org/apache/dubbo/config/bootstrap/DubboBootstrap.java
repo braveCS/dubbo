@@ -505,7 +505,8 @@ public class DubboBootstrap extends GenericEventListener {
 
         startConfigCenter();
 
-        useRegistryAsConfigCenterIfNecessary();
+        //不想强制使用外部配置
+        //useRegistryAsConfigCenterIfNecessary();
 
         startMetadataReport();
 

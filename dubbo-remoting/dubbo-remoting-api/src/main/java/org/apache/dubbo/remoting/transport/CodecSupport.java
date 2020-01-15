@@ -48,7 +48,7 @@ public class CodecSupport {
             Serialization serialization = ExtensionLoader.getExtensionLoader(Serialization.class).getExtension(name);
             byte idByte = serialization.getContentTypeId();
             if (ID_SERIALIZATION_MAP.containsKey(idByte)) {
-                logger.error("Serialization extension " + serialization.getClass().getName()
+                logger.info("目前没用到，这个错误可以忽略：Serialization extension " + serialization.getClass().getName()
                         + " has duplicate id to Serialization extension "
                         + ID_SERIALIZATION_MAP.get(idByte).getClass().getName()
                         + ", ignore this Serialization extension");

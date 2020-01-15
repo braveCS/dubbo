@@ -279,8 +279,11 @@ public class ReferenceConfig<T> extends ReferenceConfigBase<T> {
                 if (us != null && us.length > 0) {
                     for (String u : us) {
                         URL url = URL.valueOf(u);
-                        if (StringUtils.isEmpty(url.getPath())) {
-                            url = url.setPath(interfaceName);
+                        String path=url.getPath();
+                        if(path==null){
+                            url.setPath(interfaceName);
+                        }else if(!path.contains(interfaceName)){
+                            url = url.setPath(StringUtils.removeEnd(path,"/")+"/"+interfaceName);
                         }
                         if (UrlUtils.isRegistry(url)) {
                             urls.add(url.addParameterAndEncoded(REFER_KEY, StringUtils.toQueryString(map)));

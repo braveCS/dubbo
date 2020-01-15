@@ -523,7 +523,8 @@ public class ConfigValidationUtils {
         checkName(property, value);
         if (StringUtils.isNotEmpty(value)
                 && !ExtensionLoader.getExtensionLoader(type).hasExtension(value)) {
-            throw new IllegalStateException("No such extension " + value + " for " + property + "/" + type.getName());
+            //throw new IllegalStateException("No such extension " + value + " for " + property + "/" + type.getName());
+            logger.error("No such extension " + value + " for " + property + "/" + type.getName());
         }
     }
 
@@ -547,7 +548,8 @@ public class ConfigValidationUtils {
                     continue;
                 }
                 if (!ExtensionLoader.getExtensionLoader(type).hasExtension(v)) {
-                    throw new IllegalStateException("No such extension " + v + " for " + property + "/" + type.getName());
+                    logger.info("用于开发时调试，现网不会出现这种问题，如果有出现就是代码问题，No such extension " + v + " for " + property + "/" + type.getName());
+                    //throw new IllegalStateException("No such extension " + v + " for " + property + "/" + type.getName());
                 }
             }
         }

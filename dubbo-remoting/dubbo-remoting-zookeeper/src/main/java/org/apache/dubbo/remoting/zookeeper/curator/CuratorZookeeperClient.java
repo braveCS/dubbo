@@ -89,7 +89,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             client.create().forPath(path);
         } catch (NodeExistsException e) {
-            logger.warn("ZNode " + path + " already exists.", e);
+            logger.debug("ZNode " + path + " already exists.");
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -100,10 +100,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (NodeExistsException e) {
-            logger.warn("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+            logger.debug("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
                     ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
                     " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                    "we can just try to delete and create again.", e);
+                    "we can just try to delete and create again.");
             deletePath(path);
             createEphemeral(path);
         } catch (Exception e) {
@@ -133,10 +133,10 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            logger.warn("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+            logger.debug("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
                     ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
                     " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
-                    "we can just try to delete and create again.", e);
+                    "we can just try to delete and create again.");
             deletePath(path);
             createEphemeral(path, data);
         } catch (Exception e) {

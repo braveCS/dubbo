@@ -92,7 +92,7 @@ public class QosProtocolWrapper implements Protocol {
                 return;
             }
 
-            boolean qosEnable = url.getParameter(QOS_ENABLE, true);
+            boolean qosEnable = url.getParameter(QOS_ENABLE, false);
             if (!qosEnable) {
                 logger.info("qos won't be started because it is disabled. " +
                         "Please check dubbo.application.qos.enable is configured either in system property, " +

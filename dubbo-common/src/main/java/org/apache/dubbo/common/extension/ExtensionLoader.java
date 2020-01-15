@@ -276,7 +276,7 @@ public class ExtensionLoader<T> {
                     try {
                         usrs.add(getExtension(name));
                     } catch (IllegalStateException e) {
-                        logger.error("扩展实例化插件时报错,名称：" + name + "，类型：" + type.getName());
+                        logger.info("扩展实例化插件时报错,现网环境不算报错，只用于开发调试时提醒，名称：" + name + "，类型：" + type.getName());
                     }
                 }
             }
