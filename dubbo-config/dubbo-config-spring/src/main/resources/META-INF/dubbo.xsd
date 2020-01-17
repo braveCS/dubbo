@@ -633,6 +633,11 @@
                 <xsd:documentation><![CDATA[ The metadataReport address. ]]></xsd:documentation>
             </xsd:annotation>
         </xsd:attribute>
+        <xsd:attribute name="file" type="xsd:string">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The registry adddress file store. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="username" type="xsd:string" use="optional">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The metadataReport username. ]]></xsd:documentation>

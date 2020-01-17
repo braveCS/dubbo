@@ -68,6 +68,8 @@ public class MetadataReportConfig extends AbstractConfig {
      */
     private Boolean cycleReport;
 
+    private String file;
+
     /**
      * Sync report, default async
      */
@@ -196,6 +198,14 @@ public class MetadataReportConfig extends AbstractConfig {
 
     public void setGroup(String group) {
         this.group = group;
+    }
+
+    public String getFile() {
+        return file;
+    }
+
+    public void setFile(String file) {
+        this.file = file;
     }
 
     public Boolean getCluster() {

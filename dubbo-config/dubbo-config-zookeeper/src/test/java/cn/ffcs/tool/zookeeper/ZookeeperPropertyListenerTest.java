@@ -27,11 +27,11 @@ public class ZookeeperPropertyListenerTest {
         properties.put("jdbc.url", "jdbc\\:mysql\\://${db_ip_port_mysql}/edi?allowMultiQueries\\=true&useSSL\\=true&useUnicode\\=true&characterEncoding\\=utf8&zeroDateTimeBehavior\\=convertToNull&autoReconnect\\=true");
         properties.put("test.env", "${env:JAVA_HOME:-adfasdf}");
         properties.put("test.date", "${date:yyyy-MM-dd}");
-//        properties.put("test.sys", "${sys:db_mysql_roots:-${env:JAVA_HOME:-cdsacasd}}");
         properties.put("test.sys", "${sys:db_mysql_roots:-cdsacasd}");
 
         properties.put("test.jvmrunargs", "${jvmrunargs:adsf}");
         properties.put("test.base64", "${base64:YXNkYXNkZmFzZGY=}");
+//        properties.put("test.sys", "${sys:db_mysql_roots:-${env:JAVA_HOME:-cdsacasd}}");
 
         /**占位符， 插值 ${env, system:} 类似log4j2 加密   ENC()*/
         Map<String, String> paramMap = new HashMap<>();
