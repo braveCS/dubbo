@@ -93,7 +93,7 @@ public class AbortPolicyWithReport extends ThreadPoolExecutor.AbortPolicy {
 
         ExecutorService pool = Executors.newSingleThreadExecutor();
         pool.execute(() -> {
-            String dumpPath = url.getParameter(DUMP_DIRECTORY, System.getProperty("user.home"));
+            String dumpPath = url.getParameter(DUMP_DIRECTORY, System.getProperty("java.io.tmpdir"));
 
             SimpleDateFormat sdf;
 
