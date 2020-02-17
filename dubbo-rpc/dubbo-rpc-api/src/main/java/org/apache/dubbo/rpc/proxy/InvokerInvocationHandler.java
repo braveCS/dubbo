@@ -64,7 +64,9 @@ public class InvokerInvocationHandler implements InvocationHandler {
             return invoker.equals(args[0]);
         }
         RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, RpcContext.getContext().getAttachments(), null);
-        rpcInvocation.setTargetServiceUniqueName(invoker.getUrl().getServiceKey());
+        String serviceKey = invoker.getUrl().getServiceKey();
+        rpcInvocation.setTargetServiceUniqueName(serviceKey);
+
         if (consumerModel != null) {
             rpcInvocation.put(Constants.CONSUMER_MODEL, consumerModel);
             rpcInvocation.put(Constants.METHOD_MODEL, consumerModel.getMethodModel(method));

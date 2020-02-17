@@ -111,16 +111,15 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
         return shouldInit;
     }
 
-    public void checkDefault() {
-        if (consumer != null) {
-            return;
+    public void checkDefault() throws IllegalStateException {
+        if (consumer == null) {
+            consumer = ApplicationModel.getConfigManager().getDefaultConsumer().orElseGet(() -> {
+                ConsumerConfig consumerConfig = new ConsumerConfig();
+                consumerConfig.refresh();
+                return consumerConfig;
+            });
+            appendProperties(consumer);
         }
-        setConsumer(ApplicationModel.getConfigManager().getDefaultConsumer().orElseGet(() -> {
-            ConsumerConfig consumerConfig = new ConsumerConfig();
-            consumerConfig.refresh();
-            return consumerConfig;
-        }));
-        appendProperties(consumer);
     }
 
     public Class<?> getActualInterface() {
@@ -272,6 +271,8 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Parameter(excluded = true)
     public String getUniqueServiceName() {
+        String group = StringUtils.isEmpty(this.group) ? consumer.getGroup() : this.group;
+        String version = StringUtils.isEmpty(this.version) ? consumer.getVersion() : this.version;
         return URL.buildKey(interfaceName, group, version);
     }
 
