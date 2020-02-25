@@ -272,7 +272,7 @@ public class ConfigUtils {
 
         if (!allowMultiFile) {
             if (list.size() > 1) {
-                String errMsg = String.format("only 1 %s file is expected, but %d %s files found on class path: %s",
+                String errMsg = String.format("only 1 %s file is expected, but  %s %d files found on class path: %s",
                         fileName,fileName, list.size(), list.toString());
                 logger.warn(errMsg);
             }
