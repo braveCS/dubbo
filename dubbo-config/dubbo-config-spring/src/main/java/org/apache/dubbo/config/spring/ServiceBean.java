@@ -56,8 +56,7 @@ import static org.springframework.beans.factory.BeanFactoryUtils.beansOfTypeIncl
  * @export
  */
 public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean, DisposableBean,
-        ApplicationContextAware, BeanNameAware,
-        ApplicationEventPublisherAware {
+        ApplicationContextAware, BeanNameAware, ApplicationEventPublisherAware {
 
 
     private static final long serialVersionUID = 213195494150089726L;
