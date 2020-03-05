@@ -27,6 +27,7 @@ import org.apache.dubbo.rpc.model.ConsumerModel;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * InvokerHandler
@@ -63,7 +64,7 @@ public class InvokerInvocationHandler implements InvocationHandler {
         } else if (parameterTypes.length == 1 && "equals".equals(methodName)) {
             return invoker.equals(args[0]);
         }
-        RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, RpcContext.getContext().getAttachments(), null);
+        RpcInvocation rpcInvocation = new RpcInvocation(method, invoker.getInterface().getName(), args, RpcContext.getContext().getObjectAttachments(), (Map<Object, Object>)null);
         String serviceKey = invoker.getUrl().getServiceKey();
         rpcInvocation.setTargetServiceUniqueName(serviceKey);
 
