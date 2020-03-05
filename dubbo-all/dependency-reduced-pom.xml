@@ -253,6 +253,27 @@
                 <transformer>
                   <resource>META-INF/dubbo/internal/org.apache.dubbo.registry.client.metadata.MetadataServiceURLBuilder</resource>
                 </transformer>
+                <transformer>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.common.convert.Converter</resource>
+                </transformer>
+                <transformer>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.common.convert.multiple.MultiValueConverter</resource>
+                </transformer>
+                <transformer>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.rest.AnnotatedMethodParameterProcessor</resource>
+                </transformer>
+                <transformer>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.rest.ServiceRestMetadataResolver</resource>
+                </transformer>
+                <transformer>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.annotation.processing.builder.TypeDefinitionBuilder</resource>
+                </transformer>
+                <transformer>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.annotation.processing.rest.AnnotatedMethodParameterProcessor</resource>
+                </transformer>
+                <transformer>
+                  <resource>META-INF/dubbo/internal/org.apache.dubbo.metadata.annotation.processing.rest.ServiceRestMetadataResolver</resource>
+                </transformer>
               </transformers>
               <filters>
                 <filter>
