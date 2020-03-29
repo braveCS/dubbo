@@ -602,7 +602,11 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>23.0</version>
+        </dependency>
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

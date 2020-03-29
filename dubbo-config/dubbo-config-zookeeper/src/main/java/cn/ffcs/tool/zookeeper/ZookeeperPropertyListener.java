@@ -235,26 +235,28 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         }
 
         //自动识别端口，并重写端口配置信息
-        try {
-            MBeanServer server = null;
-            if (!CollectionUtils.isEmpty(MBeanServerFactory.findMBeanServer(null))) {
-                server = MBeanServerFactory.findMBeanServer(null).get(0);
-            }
-
-            if (server != null) {
-                Set names = server.queryNames(new ObjectName("Catalina:type=Connector,*"),
-                        Query.match(Query.attr("protocol"), Query.value("HTTP/1.1")));
-
-                Iterator iterator = names.iterator();
-                if (iterator.hasNext()) {
-                    ObjectName name = (ObjectName) iterator.next();
-                    properties.put("dubbo.protocol.port", server.getAttribute(name, "port").toString());
+        String port = properties.getProperty("dubbo.protocol.port");
+        if(StringUtils.isEmpty(port)){
+            try {
+                MBeanServer server = null;
+                if (!CollectionUtils.isEmpty(MBeanServerFactory.findMBeanServer(null))) {
+                    server = MBeanServerFactory.findMBeanServer(null).get(0);
                 }
-            }
-        } catch (Exception e) {
-            logger.debug("可能不是tomcat所以暂时不能自动获取到端口");
-        }
 
+                if (server != null) {
+                    Set names = server.queryNames(new ObjectName("Catalina:type=Connector,*"),
+                            Query.match(Query.attr("protocol"), Query.value("HTTP/1.1")));
+
+                    Iterator iterator = names.iterator();
+                    if (iterator.hasNext()) {
+                        ObjectName name = (ObjectName) iterator.next();
+                        properties.put("dubbo.protocol.port", server.getAttribute(name, "port").toString());
+                    }
+                }
+            } catch (Exception e) {
+                logger.debug("可能不是tomcat所以暂时不能自动获取到端口");
+            }
+        }
     }
 
 
