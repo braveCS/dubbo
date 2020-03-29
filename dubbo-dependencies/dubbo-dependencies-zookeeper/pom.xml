@@ -32,7 +32,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <revision>2.7.6-ffcs</revision>
+        <revision>2.7.7-ffcs</revision>
         <maven_flatten_version>1.1.0</maven_flatten_version>
     </properties>
 

@@ -136,7 +136,7 @@
         <arguments />
         <checkstyle.skip>true</checkstyle.skip>
         <rat.skip>true</rat.skip>
-        <revision>2.7.6-ffcs</revision>
+        <revision>2.7.7-ffcs</revision>
     </properties>
 
     <modules>
@@ -680,7 +680,7 @@
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>2.4.3</version>
                     <configuration>
-                        <createDependencyReducedPom>true</createDependencyReducedPom>
+                        <createDependencyReducedPom>false</createDependencyReducedPom>
                     </configuration>
                 </plugin>
                 <plugin>
