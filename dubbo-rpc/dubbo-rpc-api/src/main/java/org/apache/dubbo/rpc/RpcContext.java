@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.rpc;
 
+import org.apache.dubbo.common.Experimental;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.threadlocal.InternalThreadLocal;
 import org.apache.dubbo.common.utils.CollectionUtils;
@@ -157,6 +158,15 @@ public class RpcContext {
      * @see org.apache.dubbo.rpc.filter.ContextFilter
      */
     public static void removeContext() {
+        removeContext(false);
+    }
+
+    /**
+     * customized for internal use.
+     *
+     * @param checkCanRemove if need check before remove
+     */
+    public static void removeContext(boolean checkCanRemove) {
         if (LOCAL.get().canRemove()) {
             LOCAL.remove();
         }
@@ -471,7 +481,7 @@ public class RpcContext {
     }
 
     /**
-     * use {@link #getObjectAttachment(String)} instead.
+     * also see {@link #getObjectAttachment(String)}.
      *
      * @param key
      * @return attachment
@@ -490,6 +500,7 @@ public class RpcContext {
      * @param key
      * @return attachment
      */
+    @Experimental("Experiment api for supporting Object transmission")
     public Object getObjectAttachment(String key) {
         return attachments.get(key);
     }
@@ -501,7 +512,16 @@ public class RpcContext {
      * @param value
      * @return context
      */
+    public RpcContext setAttachment(String key, String value) {
+        return setObjectAttachment(key, (Object) value);
+    }
+
     public RpcContext setAttachment(String key, Object value) {
+        return setObjectAttachment(key, value);
+    }
+
+    @Experimental("Experiment api for supporting Object transmission")
+    public RpcContext setObjectAttachment(String key, Object value) {
         if (value == null) {
             attachments.remove(key);
         } else {
@@ -536,6 +556,7 @@ public class RpcContext {
      *
      * @return attachments
      */
+    @Experimental("Experiment api for supporting Object transmission")
     public Map<String, Object> getObjectAttachments() {
         return attachments;
     }
@@ -546,7 +567,6 @@ public class RpcContext {
      * @param attachment
      * @return context
      */
-    @Deprecated
     public RpcContext setAttachments(Map<String, String> attachment) {
         this.attachments.clear();
         if (attachment != null && attachment.size() > 0) {
@@ -561,6 +581,7 @@ public class RpcContext {
      * @param attachment
      * @return context
      */
+    @Experimental("Experiment api for supporting Object transmission")
     public RpcContext setObjectAttachments(Map<String, Object> attachment) {
         this.attachments.clear();
         if (attachment != null && attachment.size() > 0) {

@@ -88,9 +88,10 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
                 ConsumerConfig consumerConfig = null;
                 for (ConsumerConfig config : consumerConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault().booleanValue()) {
+                    if (config.isDefault() == null || config.isDefault()) {
                         if (consumerConfig != null) {
-                            throw new IllegalStateException("Duplicate consumer configs: " + consumerConfig + " and " + config);
+                            logger.warn("重复的consumer配置",new IllegalStateException("Duplicate consumer configs: " + consumerConfig + " and " + config));
+                            break;
                         }
                         consumerConfig = config;
                     }
@@ -108,7 +109,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 for (ApplicationConfig config : applicationConfigMap.values()) {
                     if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         if (applicationConfig != null) {
-                            throw new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config);
+                            logger.warn("重复的application配置",new IllegalStateException("Duplicate application configs: " + applicationConfig + " and " + config));
+                            break;
                         }
                         applicationConfig = config;
                     }
@@ -126,7 +128,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 for (ModuleConfig config : moduleConfigMap.values()) {
                     if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         if (moduleConfig != null) {
-                            throw new IllegalStateException("Duplicate module configs: " + moduleConfig + " and " + config);
+                            logger.warn("重复的module配置",new IllegalStateException("Duplicate module configs: " + moduleConfig + " and " + config));
+                            break;
                         }
                         moduleConfig = config;
                     }
@@ -161,7 +164,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 for (MonitorConfig config : monitorConfigMap.values()) {
                     if (config.isDefault() == null || config.isDefault().booleanValue()) {
                         if (monitorConfig != null) {
-                            throw new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and " + config);
+                            logger.warn("重复的monitor配置",new IllegalStateException("Duplicate monitor configs: " + monitorConfig + " and " + config));
+                            break;
                         }
                         monitorConfig = config;
                     }
@@ -180,7 +184,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 for (ConfigCenterConfig config : configCenterConfigMap.values()) {
                     if (config.isValid()) {
                         if (configCenterConfig != null) {
-                            throw new IllegalStateException("Duplicate configCenter configs: " + configCenterConfig + " and " + config);
+                            logger.warn("重复的configCenter配置",new IllegalStateException("Duplicate configCenter configs: " + configCenterConfig + " and " + config));
+                            break;
                         }
                         configCenterConfig = config;
                     }
@@ -199,7 +204,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 for (MetadataReportConfig config : metadataReportConfigMap.values()) {
                     if (config.isValid()) {
                         if (metadataReportConfig != null) {
-                            throw new IllegalStateException("Duplicate metadataReport configs: " + metadataReportConfig + " and " + config);
+                            logger.warn("重复的metadataReport配置",new IllegalStateException("Duplicate metadataReport configs: " + metadataReportConfig + " and " + config));
+                            break;
                         }
                         metadataReportConfig = config;
                     }
@@ -218,7 +224,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 for (MetricsConfig config : metricsConfigMap.values()) {
                     if (config.isValid()) {
                         if (metricsConfig != null) {
-                            throw new IllegalStateException("Duplicate metrics configs: " + metricsConfig + " and " + config);
+                            logger.warn("重复的metrics配置",new IllegalStateException("Duplicate metrics configs: " + metricsConfig + " and " + config));
+                            break;
                         }
                         metricsConfig = config;
                     }

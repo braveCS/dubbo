@@ -67,7 +67,6 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 import org.apache.dubbo.registry.client.ServiceDiscoveryRegistry;
 import org.apache.dubbo.registry.client.ServiceInstance;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
-import org.apache.dubbo.rpc.Protocol;
 import org.apache.dubbo.rpc.model.ApplicationModel;
 
 import java.io.IOException;
@@ -135,6 +134,8 @@ public class DubboBootstrap extends GenericEventListener {
 
     private final Condition condition = lock.newCondition();
 
+    private final Lock destroyLock = new ReentrantLock();
+
     private final ExecutorService executorService = newSingleThreadExecutor();
 
     private final EventDispatcher eventDispatcher = EventDispatcher.getDefaultExtension();
@@ -154,6 +155,8 @@ public class DubboBootstrap extends GenericEventListener {
     private AtomicBoolean initialized = new AtomicBoolean(false);
 
     private AtomicBoolean started = new AtomicBoolean(false);
+
+    private AtomicBoolean ready = new AtomicBoolean(true);
 
     private AtomicBoolean destroyed = new AtomicBoolean(false);
 
@@ -629,8 +632,9 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     /**
-     * For compatibility purpose, use registry as the default config center when the registry protocol is zookeeper and
-     * there's no config center specified explicitly.
+     * For compatibility purpose, use registry as the default config center when
+     * there's no config center specified explicitly and
+     * useAsConfigCenter of registryConfig is null or true
      */
     private void useRegistryAsConfigCenterIfNecessary() {
         // we use the loading status of DynamicConfiguration to decide whether ConfigCenter has been initiated.
@@ -737,6 +741,7 @@ public class DubboBootstrap extends GenericEventListener {
      */
     public DubboBootstrap start() {
         if (started.compareAndSet(false, true)) {
+            ready.set(false);
             initialize();
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " is starting...");
@@ -753,7 +758,24 @@ public class DubboBootstrap extends GenericEventListener {
             }
 
             referServices();
-
+            if (asyncExportingFutures.size() > 0) {
+                new Thread(() -> {
+                    try {
+                        this.awaitFinish();
+                    } catch (Exception e) {
+                        logger.warn(NAME + " exportAsync occurred an exception.");
+                    }
+                    ready.set(true);
+                    if (logger.isInfoEnabled()) {
+                        logger.info(NAME + " is ready.");
+                    }
+                }).start();
+            } else {
+                ready.set(true);
+                if (logger.isInfoEnabled()) {
+                    logger.info(NAME + " is ready.");
+                }
+            }
             if (logger.isInfoEnabled()) {
                 logger.info(NAME + " has started.");
             }
@@ -812,6 +834,10 @@ public class DubboBootstrap extends GenericEventListener {
 
     public boolean isStarted() {
         return started.get();
+    }
+
+    public boolean isReady() {
+        return ready.get();
     }
 
     public DubboBootstrap stop() throws IllegalStateException {
@@ -911,6 +937,7 @@ public class DubboBootstrap extends GenericEventListener {
                 ExecutorService executor = executorRepository.getServiceExporterExecutor();
                 Future<?> future = executor.submit(() -> {
                     sc.export();
+                    exportedServices.add(sc);
                 });
                 asyncExportingFutures.add(future);
             } else {
@@ -1034,44 +1061,29 @@ public class DubboBootstrap extends GenericEventListener {
     }
 
     public void destroy() {
-        // for compatibility purpose
-        DubboShutdownHook.destroyAll();
-
-        if (started.compareAndSet(true, false)
-                && destroyed.compareAndSet(false, true)) {
-
-            unregisterServiceInstance();
-            unexportMetadataService();
-            unexportServices();
-            unreferServices();
-
-            destroyRegistries();
-            destroyProtocols();
-            destroyServiceDiscoveries();
-
-            clear();
-            shutdown();
-            release();
-        }
-    }
-
-    /**
-     * Destroy all the protocols.
-     */
-    private void destroyProtocols() {
-        ExtensionLoader<Protocol> loader = ExtensionLoader.getExtensionLoader(Protocol.class);
-        for (String protocolName : loader.getLoadedExtensions()) {
+        if (destroyLock.tryLock()) {
             try {
-                Protocol protocol = loader.getLoadedExtension(protocolName);
-                if (protocol != null) {
-                    protocol.destroy();
+                DubboShutdownHook.destroyAll();
+
+                if (started.compareAndSet(true, false)
+                        && destroyed.compareAndSet(false, true)) {
+
+                    unregisterServiceInstance();
+                    unexportMetadataService();
+                    unexportServices();
+                    unreferServices();
+
+                    destroyRegistries();
+                    DubboShutdownHook.destroyProtocols();
+                    destroyServiceDiscoveries();
+
+                    clear();
+                    shutdown();
+                    release();
                 }
-            } catch (Throwable t) {
-                logger.warn(t.getMessage(), t);
+            } finally {
+                destroyLock.unlock();
             }
-        }
-        if (logger.isDebugEnabled()) {
-            logger.debug(NAME + "'s all ProtocolConfigs have been destroyed.");
         }
     }
 

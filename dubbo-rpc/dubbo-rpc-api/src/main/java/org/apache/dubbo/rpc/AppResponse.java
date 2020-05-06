@@ -198,7 +198,17 @@ public class AppResponse implements Result {
     }
 
     @Override
+    public void setAttachment(String key, String value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
     public void setAttachment(String key, Object value) {
+        setObjectAttachment(key, value);
+    }
+
+    @Override
+    public void setObjectAttachment(String key, Object value) {
         attachments.put(key, value);
     }
 
@@ -220,6 +230,12 @@ public class AppResponse implements Result {
     @Override
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         throw new UnsupportedOperationException("AppResponse represents an concrete business response, there will be no status changes, you should get internal values directly.");
+    }
+
+    public void clear() {
+        this.result = null;
+        this.exception = null;
+        this.attachments.clear();
     }
 
     @Override
