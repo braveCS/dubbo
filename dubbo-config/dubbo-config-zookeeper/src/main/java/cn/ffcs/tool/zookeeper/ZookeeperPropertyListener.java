@@ -39,6 +39,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * <pre>
@@ -112,9 +113,12 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
             overWriterGlobalProperties();
             //megerLocalProperties(properties);
             logger.info("zookeeper上的配置合并到本地的配置文件global.properties");
-            zk.close();
-        } catch (InterruptedException e) {
-            logger.error("关闭ZooKeeper服务器  {} 的链接出现如下异常", e);
+        } finally {
+            try {
+                zk.close();
+            } catch (InterruptedException e) {
+                logger.error("关闭ZooKeeper服务器  {} 的链接出现如下异常", e);
+            }
         }
         doContextInitialized(event);
     }
@@ -284,7 +288,7 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
     private static void waitUntilConnected(ZooKeeper zooKeeper, CountDownLatch connectedLatch) {
         if (States.CONNECTING == zooKeeper.getState()) {
             try {
-                connectedLatch.await();
+                connectedLatch.await(30, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 throw new IllegalStateException(e);
             }

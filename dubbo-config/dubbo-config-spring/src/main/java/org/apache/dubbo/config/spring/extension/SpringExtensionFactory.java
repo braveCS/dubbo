@@ -16,16 +16,22 @@
  */
 package org.apache.dubbo.config.spring.extension;
 
+import com.alibaba.spring.util.BeanFactoryUtils;
+
 import org.apache.dubbo.common.extension.ExtensionFactory;
 import org.apache.dubbo.common.extension.SPI;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
 import org.apache.dubbo.common.utils.ConcurrentHashSet;
-
-import com.alibaba.spring.util.BeanFactoryUtils;
+import org.apache.dubbo.config.ApplicationConfig;
+import org.apache.dubbo.config.MetricsConfig;
+import org.apache.dubbo.config.ModuleConfig;
+import org.apache.dubbo.config.MonitorConfig;
+import org.apache.dubbo.config.SslConfig;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.util.Arrays;
 import java.util.Set;
 
 /**
@@ -62,6 +68,11 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
         //SPI should be get from SpiExtensionFactory
         if (type.isInterface() && type.isAnnotationPresent(SPI.class)) {
+            return null;
+        }
+
+        if(Arrays.asList(ApplicationConfig.class, ModuleConfig.class, MetricsConfig.class,
+                MonitorConfig.class, SslConfig.class).contains(type)){
             return null;
         }
 

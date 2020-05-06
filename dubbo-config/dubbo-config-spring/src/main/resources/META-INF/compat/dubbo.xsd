@@ -777,6 +777,11 @@
         <xsd:sequence minOccurs="0" maxOccurs="unbounded">
             <xsd:element ref="parameter" minOccurs="0" maxOccurs="unbounded"/>
         </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="address" type="xsd:string">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The monitor address. ]]></xsd:documentation>
@@ -838,6 +843,11 @@
     </xsd:complexType>
 
     <xsd:complexType name="metricsType">
+        <xsd:attribute name="id" type="xsd:ID">
+            <xsd:annotation>
+                <xsd:documentation><![CDATA[ The unique identifier for a bean. ]]></xsd:documentation>
+            </xsd:annotation>
+        </xsd:attribute>
         <xsd:attribute name="port" type="xsd:string" use="required">
             <xsd:annotation>
                 <xsd:documentation><![CDATA[ The metrics service port. ]]></xsd:documentation>

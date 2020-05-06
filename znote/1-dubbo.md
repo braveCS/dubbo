@@ -256,6 +256,17 @@ git merge master
 
  
 
+
+
+git checkout master
+git pull upstream master
+git checkout ffcs
+git merge master ffcs
+git commint -a
+git push origin ffcs
+
+
+
 \#从源分支获取最新的代码 git fetch upstream;
 
 git merge upstream/xxxx
