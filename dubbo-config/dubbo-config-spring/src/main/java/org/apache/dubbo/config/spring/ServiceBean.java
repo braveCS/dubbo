@@ -293,10 +293,8 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         prepareDubboConfigBeans();
 
         if (StringUtils.isEmpty(getPath())) {
-            if (StringUtils.isNotEmpty(beanName)
-                    && StringUtils.isNotEmpty(getInterface())
-                    && beanName.startsWith(getInterface())) {
-                setPath(beanName);
+            if (StringUtils.isNotEmpty(getInterface())) {
+                setPath(getInterface());
             }
         }
     }

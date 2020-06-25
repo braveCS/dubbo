@@ -607,6 +607,11 @@
             <artifactId>guava</artifactId>
             <version>23.0</version>
         </dependency>
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>fastjson</artifactId>
+        </dependency>
+
         <!-- Temporarily add this part to exclude transitive dependency -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -683,7 +688,6 @@
                                     <include>org.apache.dubbo:dubbo-rpc-http</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rmi</include>
                                     <include>org.apache.dubbo:dubbo-rpc-hessian</include>
-                                    <include>org.apache.dubbo:dubbo-rpc-http-invoker</include>
                                     <include>org.apache.dubbo:dubbo-rpc-webservice</include>
                                     <include>org.apache.dubbo:dubbo-rpc-thrift</include>
                                     <include>org.apache.dubbo:dubbo-rpc-native-thrift</include>
