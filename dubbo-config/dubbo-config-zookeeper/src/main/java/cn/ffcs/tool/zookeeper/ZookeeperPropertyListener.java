@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 public class ZookeeperPropertyListener extends ContextLoaderListener {
     private static Logger logger = LoggerFactory.getLogger(ZookeeperPropertyListener.class);
     private static final String COMMON_CONF = "commonConf";
-    private static final String COMMON_CONF_DEFAULT = "common-conf";
+    public static final String COMMON_CONF_DEFAULT = "common-conf";
     private static final String ENVIRONMENT_NAME = "environmentName";
     private static final String APPLICATION_NAME = "applicationName";
     private static final String ZOOKEEPER_URL = "zookeeperUrl";
@@ -133,8 +133,9 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
             //加载global.properties
             File file = getResourceAsFile(PROPERTIES_FILE);
             logger.info("重写的文件：{}", file);
-            if (!file.exists())
+            if (!file.exists()) {
                 logger.info("{}global.properties", file.createNewFile() ? "创建" : "修改");
+            }
 
             //一些额外的属性
             appendSomeProcessProperties();
@@ -212,10 +213,14 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         }
 
         //去掉前后空格和/t
+        //1.不间断空格\u00A0,主要用在office中,让一个单词在结尾处不会换行显示,快捷键ctrl+shift+space ;
+        //2.半角空格(英文符号)\u0020,代码中常用的;
+        //3.全角空格(中文符号)\u3000,中文文章中使用;
         String value;
+        String patternString="[\\p{C}|\\u00A0-\\u00FF|\\u3000|\\s]*";
         for (Map.Entry<Object, Object> entry : properties.entrySet()) {
             value = (String) entry.getValue();
-            value = value.replace("\t+", "").trim();
+            value = value.replaceAll("^"+patternString,"").replaceAll(patternString+"$","");
             properties.put(entry.getKey(), value);
         }
 
@@ -240,29 +245,41 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
 
         //自动识别端口，并重写端口配置信息
         String port = properties.getProperty("dubbo.protocol.port");
-        if(StringUtils.isEmpty(port)){
-            try {
-                MBeanServer server = null;
-                if (!CollectionUtils.isEmpty(MBeanServerFactory.findMBeanServer(null))) {
-                    server = MBeanServerFactory.findMBeanServer(null).get(0);
-                }
-
-                if (server != null) {
-                    Set names = server.queryNames(new ObjectName("Catalina:type=Connector,*"),
-                            Query.match(Query.attr("protocol"), Query.value("HTTP/1.1")));
-
-                    Iterator iterator = names.iterator();
-                    if (iterator.hasNext()) {
-                        ObjectName name = (ObjectName) iterator.next();
-                        properties.put("dubbo.protocol.port", server.getAttribute(name, "port").toString());
-                    }
-                }
-            } catch (Exception e) {
-                logger.debug("可能不是tomcat所以暂时不能自动获取到端口");
+        String tomcatPort=getTomcatPort();
+        //如果找到tomcat端口
+        if(!StringUtils.isEmpty(tomcatPort)){
+            if(StringUtils.isEmpty(port)){
+                properties.put("dubbo.protocol.port",tomcatPort);
+            }else if(!port.equalsIgnoreCase(tomcatPort)){
+                logger.error("================== 配置端口（{}）和tomcat实际端口（{}）不一致，启动失败：" +
+                        "请修改dubbo.protocol.port={},或直接删除dubbo.protocol.port这个配置============",port,tomcatPort,tomcatPort);
+                System.exit(1);
             }
         }
     }
 
+    private String getTomcatPort(){
+        try {
+            MBeanServer server = null;
+            if (!CollectionUtils.isEmpty(MBeanServerFactory.findMBeanServer(null))) {
+                server = MBeanServerFactory.findMBeanServer(null).get(0);
+            }
+
+            if (server != null) {
+                Set names = server.queryNames(new ObjectName("Catalina:type=Connector,*"),
+                        Query.match(Query.attr("protocol"), Query.value("HTTP/1.1")));
+
+                Iterator iterator = names.iterator();
+                if (iterator.hasNext()) {
+                    ObjectName name = (ObjectName) iterator.next();
+                    return server.getAttribute(name, "port").toString();
+                }
+            }
+        } catch (Exception e) {
+            logger.debug("可能不是tomcat所以暂时不能自动获取到端口");
+        }
+        return null;
+    }
 
     //=======================================================================================================
 
@@ -273,11 +290,23 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
     private void connectToZK() {
         if (zookeeperUrl == null || zookeeperUrl.length() == 0)
             return;
+
+        String usernamePwd=null;
+        String realUrl=zookeeperUrl;
+        int upIndex=zookeeperUrl.lastIndexOf('@');
+        if(upIndex!=-1){
+            usernamePwd = zookeeperUrl.substring(0,upIndex);
+             realUrl=zookeeperUrl.substring(upIndex+1);
+        }
+
         //准备链接zk
         CountDownLatch connectedLatch = new CountDownLatch(1);
         Watcher watcher = new ConnectedWatcher(connectedLatch);
         try {
-            zk = new ZooKeeper(zookeeperUrl, 3000, watcher);
+            zk = new ZooKeeper(realUrl, 60000, watcher);
+            if(!StringUtils.isEmpty(usernamePwd)){
+                zk.addAuthInfo("digest", usernamePwd.getBytes());
+            }
             waitUntilConnected(zk, connectedLatch);
             logger.info("与ZooKeeper服务器{} 连接成功 ", zookeeperUrl);
         } catch (IOException e) {
@@ -384,7 +413,7 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
         }
 
         for (String item : miss) {
-            logger.error("没有配置：{}={} ", item, configProp.getProperty(item));
+            logger.error("=========  没有配置，提示：请配置(等号后面是示例值)：{}={}", item, configProp.getProperty(item));
         }
         System.exit(1);
     }

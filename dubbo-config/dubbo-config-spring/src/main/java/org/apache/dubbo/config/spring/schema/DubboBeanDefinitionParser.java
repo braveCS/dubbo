@@ -178,7 +178,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                 } else if ("arguments".equals(property)) {
                     parseArguments(id, element.getChildNodes(), beanDefinition, parserContext);
                 } else {
-                    String value = resolveAttribute(element, property, parserContext);
+                    String value = element.getAttribute(property);
                     if (value != null) {
                         value = value.trim();
                         if (value.length() > 0) {
@@ -296,7 +296,7 @@ public class DubboBeanDefinitionParser implements BeanDefinitionParser {
                     || "property".equals(element.getLocalName())) {
                 String name = resolveAttribute(element, "name", parserContext);
                 if (StringUtils.isNotEmpty(name)) {
-                    String value = resolveAttribute(element, "value", parserContext);
+                    String value = element.getAttribute("value");
                     String ref = resolveAttribute(element, "ref", parserContext);
                     if (StringUtils.isNotEmpty(value)) {
                         beanDefinition.getPropertyValues().addPropertyValue(name, value);

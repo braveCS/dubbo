@@ -137,7 +137,11 @@ public class ZKPropertiesLoader {
                 Arrays.stream(importPaths).forEach(importPath -> addZKNodeProperties(importPath, properties));
             }
         } catch (KeeperException e) {
-            logger.info("{}:获取zookeeper配置时不存在:{}", path, path);
+            if(path.contains(ZookeeperPropertyListener.COMMON_CONF_DEFAULT)){
+                logger.info("{}:获取zookeeper配置时不存在:{}", path, path);
+            }else {
+                logger.error(path+":获取zookeeper配置时不存在", e);
+            }
         } catch (InterruptedException e) {
             logger.error(e.toString(), e);
         }

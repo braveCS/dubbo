@@ -16,6 +16,7 @@
  */
 package org.apache.dubbo.remoting.zookeeper.curator;
 
+import org.apache.curator.framework.api.ACLProvider;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.logger.Logger;
 import org.apache.dubbo.common.logger.LoggerFactory;
@@ -39,6 +40,8 @@ import org.apache.zookeeper.KeeperException.NoNodeException;
 import org.apache.zookeeper.KeeperException.NodeExistsException;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
+import org.apache.zookeeper.ZooDefs;
+import org.apache.zookeeper.data.ACL;
 
 import java.nio.charset.Charset;
 import java.util.List;
@@ -70,7 +73,17 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                     .sessionTimeoutMs(sessionExpireMs);
             String authority = url.getAuthority();
             if (authority != null && authority.length() > 0) {
-                builder = builder.authorization("digest", authority.getBytes());
+                builder = builder.authorization("digest", authority.getBytes()).aclProvider(new ACLProvider() {
+                    @Override
+                    public List<ACL> getDefaultAcl() {
+                        return ZooDefs.Ids.CREATOR_ALL_ACL;
+                    }
+
+                    @Override
+                    public List<ACL> getAclForPath(String path) {
+                        return ZooDefs.Ids.CREATOR_ALL_ACL;
+                    }
+                });
             }
             client = builder.build();
             client.getConnectionStateListenable().addListener(new CuratorConnectionStateListener(url));
