@@ -197,7 +197,7 @@ class URL implements Serializable {
                Map<String, Map<String, String>> methodParameters) {
         if (StringUtils.isEmpty(username)
                 && StringUtils.isNotEmpty(password)) {
-            throw new IllegalArgumentException("Invalid url, password without username!");
+            throw new IllegalArgumentException("Invalid url, password:"+password+" without username!"+parameters);
         }
         this.protocol = protocol;
         this.username = username;
@@ -456,9 +456,17 @@ class URL implements Serializable {
     }
 
     public String getAuthority() {
-        if (StringUtils.isEmpty(username)
-                && StringUtils.isEmpty(password)) {
-            return null;
+        if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
+            if(CollectionUtils.isEmptyMap(parameters)){
+                return null;
+            }
+            String usernameParam=parameters.get("username");
+            String passwordParam=parameters.get("password");
+            if(StringUtils.isEmpty(usernameParam) || StringUtils.isEmpty(passwordParam)){
+                return null;
+            }else{
+                return usernameParam+":"+passwordParam;
+            }
         }
         return (username == null ? "" : username)
                 + ":" + (password == null ? "" : password);
