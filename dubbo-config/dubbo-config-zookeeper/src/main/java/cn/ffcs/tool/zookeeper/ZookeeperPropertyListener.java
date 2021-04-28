@@ -251,13 +251,13 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
             if(StringUtils.isEmpty(port)){
                 properties.put("dubbo.protocol.port",tomcatPort);
             }else if(!port.equalsIgnoreCase(tomcatPort)){
-                port = properties.getProperty("dubbo.protocol.port.force");
-                if(StringUtils.isEmpty(port)){
+                String forcePort = properties.getProperty("dubbo.protocol.port.force");
+                if(StringUtils.isEmpty(forcePort)){
                     logger.error("================== 配置端口（{}）和tomcat实际端口（{}）不一致，启动失败：" +
                             "请修改dubbo.protocol.port={},或直接删除dubbo.protocol.port这个配置============",port,tomcatPort,tomcatPort);
                     System.exit(1);
                 }else{
-                    properties.put("dubbo.protocol.port.force",port);
+                    properties.put("dubbo.protocol.port.force",forcePort);
                 }
 
             }

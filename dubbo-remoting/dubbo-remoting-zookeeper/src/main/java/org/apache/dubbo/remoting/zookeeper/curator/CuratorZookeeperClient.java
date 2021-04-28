@@ -63,8 +63,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
 
     public CuratorZookeeperClient(URL url) {
         super(url);
+        int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
         try {
-            int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_CONNECTION_TIMEOUT_MS);
             int sessionExpireMs = url.getParameter(ZK_SESSION_EXPIRE_KEY, DEFAULT_SESSION_TIMEOUT_MS);
             CuratorFrameworkFactory.Builder builder = CuratorFrameworkFactory.builder()
                     .connectString(url.getBackupAddress())
@@ -93,7 +93,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
                 throw new IllegalStateException("zookeeper not connected");
             }
         } catch (Exception e) {
-            throw new IllegalStateException(e.getMessage(), e);
+            throw new IllegalStateException(e.getMessage()+"url:"+url+",超时时间："+timeout, e);
         }
     }
 
@@ -102,7 +102,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             client.create().forPath(path);
         } catch (NodeExistsException e) {
-            logger.debug("ZNode " + path + " already exists.");
+            logger.trace("ZNode " + path + " already exists.");
         } catch (Exception e) {
             throw new IllegalStateException(e.getMessage(), e);
         }
@@ -113,7 +113,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path);
         } catch (NodeExistsException e) {
-            logger.debug("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+            logger.trace("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
                     ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
                     " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
                     "we can just try to delete and create again.");
@@ -146,7 +146,7 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         try {
             client.create().withMode(CreateMode.EPHEMERAL).forPath(path, dataBytes);
         } catch (NodeExistsException e) {
-            logger.debug("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
+            logger.trace("ZNode " + path + " already exists, since we will only try to recreate a node on a session expiration" +
                     ", this duplication might be caused by a delete delay from the zk server, which means the old expired session" +
                     " may still holds this ZNode and the server just hasn't got time to do the deletion. In this case, " +
                     "we can just try to delete and create again.");
@@ -310,8 +310,8 @@ public class CuratorZookeeperClient extends AbstractZookeeperClient<CuratorZooke
         @Override
         public void childEvent(CuratorFramework client, TreeCacheEvent event) throws Exception {
             if (dataListener != null) {
-                if (logger.isDebugEnabled()) {
-                    logger.debug("listen the zookeeper changed. The changed data:" + event.getData());
+                if (logger.isTraceEnabled()) {
+                    logger.trace("listen the zookeeper changed. The changed data:" + event.getData());
                 }
                 TreeCacheEvent.Type type = event.getType();
                 EventType eventType = null;

@@ -598,7 +598,8 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void startConfigCenter() {
 
-        useRegistryAsConfigCenterIfNecessary();
+        //不使用dubbo的动态配置
+        //useRegistryAsConfigCenterIfNecessary();
 
         Collection<ConfigCenterConfig> configCenters = configManager.getConfigCenters();
 
@@ -629,7 +630,7 @@ public class DubboBootstrap extends GenericEventListener {
 
     private void startMetadataCenter() {
 
-        useRegistryAsMetadataCenterIfNecessary();
+        //useRegistryAsMetadataCenterIfNecessary();
 
         ApplicationConfig applicationConfig = getApplication();
 

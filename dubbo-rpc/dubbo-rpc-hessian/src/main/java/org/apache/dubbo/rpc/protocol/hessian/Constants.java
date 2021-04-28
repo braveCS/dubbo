@@ -31,6 +31,6 @@ public interface Constants {
     /**##CHANGE BY CN.FFCS##**/
     boolean DEFAULT_HESSIAN_OVERLOAD_METHOD = true;
 
-    String DEFAULT_HTTP_CLIENT = "jdk";
+    String DEFAULT_HTTP_CLIENT = "httpclient";
 
 }

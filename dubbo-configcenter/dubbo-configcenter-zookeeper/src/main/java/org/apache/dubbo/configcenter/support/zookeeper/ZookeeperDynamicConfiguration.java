@@ -57,7 +57,7 @@ public class ZookeeperDynamicConfiguration extends TreePathDynamicConfiguration 
         zkClient.addDataListener(rootPath, cacheListener, executor);
         try {
             // Wait for connection
-            long timeout = url.getParameter("init.timeout", 5000);
+            long timeout = url.getParameter("init.timeout", 300 * 1000);
             boolean isCountDown = this.initializedLatch.await(timeout, TimeUnit.MILLISECONDS);
             if (!isCountDown) {
                 throw new IllegalStateException("Failed to receive INITIALIZED event from zookeeper, pls. check if url "

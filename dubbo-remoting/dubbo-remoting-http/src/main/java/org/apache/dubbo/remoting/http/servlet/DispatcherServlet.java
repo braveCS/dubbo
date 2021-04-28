@@ -54,6 +54,9 @@ public class DispatcherServlet extends HttpServlet {
     @Override
     protected void service(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // x-application/hessian, HessianHandle
+        // application/json-rpc  XmlRpcProtocl.InternalHandler
+        //text/xml; charset=UTF-8
         HttpHandler handler = HANDLERS.get(request.getLocalPort());
         if (handler == null) {// service not found.
             response.sendError(HttpServletResponse.SC_NOT_FOUND, "Service not found.");

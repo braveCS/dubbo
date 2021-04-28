@@ -292,9 +292,12 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         // Initializes Dubbo's Config Beans before @Reference bean autowiring
         prepareDubboConfigBeans();
 
+        /**##CHANGE BY CN.FFCS##**/
         if (StringUtils.isEmpty(getPath())) {
-            if (StringUtils.isNotEmpty(getInterface())) {
-                setPath(getInterface());
+            if (StringUtils.isNotEmpty(beanName)
+                    && StringUtils.isNotEmpty(getInterface())
+                    && beanName.startsWith(getInterface())) {
+                setPath(beanName);
             }
         }
     }

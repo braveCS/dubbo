@@ -163,6 +163,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         }
         this.reportURL = url;
     }
+/*
 
     private void doSaveProperties(long version) {
         if (version < lastCacheChanged.get()) {
@@ -204,6 +205,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
             logger.warn("Failed to save service store file, cause: " + e.getMessage(), e);
         }
     }
+*/
 
     void loadProperties() {
         if (localCacheFile != null && localCacheFile.exists()) {
@@ -230,11 +232,11 @@ public abstract class AbstractMetadataReport implements MetadataReport {
                 properties.remove(metadataIdentifier.getUniqueKey(KeyTypeEnum.UNIQUE_KEY));
             }
             long version = lastCacheChanged.incrementAndGet();
-            if (sync) {
+           /* if (sync) {
                 new SaveProperties(version).run();
             } else {
                 reportCacheExecutor.execute(new SaveProperties(version));
-            }
+            }*/
 
         } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
@@ -246,7 +248,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         return getUrl().toString();
     }
 
-    private class SaveProperties implements Runnable {
+    /*private class SaveProperties implements Runnable {
         private long version;
 
         private SaveProperties(long version) {
@@ -257,7 +259,7 @@ public abstract class AbstractMetadataReport implements MetadataReport {
         public void run() {
             doSaveProperties(version);
         }
-    }
+    }*/
 
     @Override
     public void storeProviderMetadata(MetadataIdentifier providerMetadataIdentifier, ServiceDefinition serviceDefinition) {

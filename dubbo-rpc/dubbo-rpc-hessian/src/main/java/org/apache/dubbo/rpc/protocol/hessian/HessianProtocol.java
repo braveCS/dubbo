@@ -112,10 +112,18 @@ public class HessianProtocol extends AbstractProxyProtocol {
         }
 
         HessianProxyFactory hessianProxyFactory = new HessianProxyFactory();
+
         boolean isHessian2Request = url.getParameter(HESSIAN2_REQUEST_KEY, DEFAULT_HESSIAN2_REQUEST);
         hessianProxyFactory.setHessian2Request(isHessian2Request);
+
         boolean isOverloadEnabled = url.getParameter(HESSIAN_OVERLOAD_METHOD_KEY, DEFAULT_HESSIAN_OVERLOAD_METHOD);
         hessianProxyFactory.setOverloadEnabled(isOverloadEnabled);
+
+        //需要放在setConnectionFactory之前，因为connectFactory有要用到hessianProxyFactory的参数，尤其是timeout
+        int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
+        hessianProxyFactory.setConnectTimeout(timeout);
+        hessianProxyFactory.setReadTimeout(timeout);
+
         String client = url.getParameter(CLIENT_KEY, DEFAULT_HTTP_CLIENT);
         if ("httpclient".equals(client)) {
             HessianConnectionFactory factory = new HttpClientConnectionFactory();
@@ -128,9 +136,6 @@ public class HessianProtocol extends AbstractProxyProtocol {
             factory.setHessianProxyFactory(hessianProxyFactory);
             hessianProxyFactory.setConnectionFactory(factory);
         }
-        int timeout = url.getParameter(TIMEOUT_KEY, DEFAULT_TIMEOUT);
-        hessianProxyFactory.setConnectTimeout(timeout);
-        hessianProxyFactory.setReadTimeout(timeout);
         return (T) hessianProxyFactory.create(serviceType, url.setProtocol("http").toJavaURL(), Thread.currentThread().getContextClassLoader());
     }
 
