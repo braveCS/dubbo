@@ -180,7 +180,7 @@ public class HessianProtocol extends AbstractProxyProtocol {
                 throws IOException, ServletException {
             String uri = request.getRequestURI();
             HessianSkeleton skeleton = skeletonMap.get(uri);
-            if(skeleton==null){
+            if(skeleton==null){ /**##CHANGE BY CN.FFCS##**/
                 response.setStatus(404);
                 logger.warn("请求路径："+uri+"不存在");
                 return;

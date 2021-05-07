@@ -34,6 +34,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import java.util.Arrays;
 import java.util.Set;
 
+import static org.apache.dubbo.config.spring.util.DubboBeanUtils.getOptionalBean;
+
 /**
  * SpringExtensionFactory
  */
@@ -77,7 +79,7 @@ public class SpringExtensionFactory implements ExtensionFactory {
         }
 
         for (ApplicationContext context : CONTEXTS) {
-            T bean = BeanFactoryUtils.getOptionalBean(context, name, type);
+            T bean = getOptionalBean(context, name, type);
             if (bean != null) {
                 return bean;
             }
@@ -87,4 +89,5 @@ public class SpringExtensionFactory implements ExtensionFactory {
 
         return null;
     }
+
 }

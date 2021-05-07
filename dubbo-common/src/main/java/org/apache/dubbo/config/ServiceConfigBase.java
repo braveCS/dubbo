@@ -207,6 +207,11 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     }
 
     public void checkProtocol() {
+        if (provider != null && notHasSelfProtocolProperty()) {
+            setProtocols(provider.getProtocols());
+            setProtocolIds(provider.getProtocolIds());
+        }
+
         if (CollectionUtils.isEmpty(protocols) && provider != null) {
             setProtocols(provider.getProtocols());
         }
@@ -217,26 +222,24 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
     }
 
+    private boolean notHasSelfProtocolProperty() {
+        return CollectionUtils.isEmpty(protocols) && StringUtils.isEmpty(protocolIds);
+    }
+
     public void completeCompoundConfigs() {
         super.completeCompoundConfigs(provider);
         if (provider != null) {
-            if (protocols == null) {
+            if (notHasSelfProtocolProperty()) {
                 setProtocols(provider.getProtocols());
+                setProtocolIds(provider.getProtocolIds());
             }
             if (configCenter == null) {
                 setConfigCenter(provider.getConfigCenter());
-            }
-            if (StringUtils.isEmpty(registryIds)) {
-                setRegistryIds(provider.getRegistryIds());
-            }
-            if (StringUtils.isEmpty(protocolIds)) {
-                setProtocolIds(provider.getProtocolIds());
             }
         }
     }
 
     private void convertProtocolIdsToProtocols() {
-        computeValidProtocolIds();
         if (StringUtils.isEmpty(protocolIds)) {
             if (CollectionUtils.isEmpty(protocols)) {
                 List<ProtocolConfig> protocolConfigs = ApplicationModel.getConfigManager().getDefaultProtocols();
@@ -315,9 +318,10 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (StringUtils.isEmpty(id)) {
-            id = interfaceName;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = interfaceName;
+//        }
     }
 
     public T getRef() {
@@ -431,6 +435,11 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     @Override
     protected void computeValidRegistryIds() {
+        if (provider != null && notHasSelfRegistryProperty()) {
+            setRegistries(provider.getRegistries());
+            setRegistryIds(provider.getRegistryIds());
+        }
+
         super.computeValidRegistryIds();
         if (StringUtils.isEmpty(getRegistryIds())) {
             if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getRegistryIds())) {

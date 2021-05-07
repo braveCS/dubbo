@@ -98,7 +98,7 @@ public abstract class AbstractRegistry implements Registry {
         if (url.getParameter(REGISTRY__LOCAL_FILE_CACHE_ENABLED, true)) {
             // Start file save timer
             syncSaveFile = url.getParameter(REGISTRY_FILESAVE_SYNC_KEY, false);
-            String defaultFilename = System.getProperty("java.io.tmpdir") + "/.dubbo/dubbo-registry-" + url.getParameter(APPLICATION_KEY) + "-" + url.getAddress().replaceAll(":", "-") + ".cache";
+            String defaultFilename = System.getProperty("java.io.tmpdir") + "/.dubbo/dubbo-registry-" + url.getParameter(APPLICATION_KEY) + "-" + url.getAddress().replaceAll(":", "-") + ".cache";/**##CHANGE BY CN.FFCS##**/
             String filename = url.getParameter(FILE_KEY, defaultFilename);
             File file = null;
             if (ConfigUtils.isNotEmpty(filename)) {
@@ -331,6 +331,9 @@ public abstract class AbstractRegistry implements Registry {
         if (listeners != null) {
             listeners.remove(listener);
         }
+
+        // do not forget remove notified
+        notified.remove(url);
     }
 
     protected void recover() throws Exception {

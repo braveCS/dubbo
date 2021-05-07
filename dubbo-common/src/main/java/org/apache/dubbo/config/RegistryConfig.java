@@ -137,11 +137,6 @@ public class RegistryConfig extends AbstractConfig {
     private Map<String, String> parameters;
 
     /**
-     * Whether it's default
-     */
-    private Boolean isDefault;
-
-    /**
      * Simple the registry. both useful for provider and consumer
      *
      * @since 2.7.0
@@ -192,6 +187,11 @@ public class RegistryConfig extends AbstractConfig {
     public RegistryConfig(String address, String protocol) {
         setAddress(address);
         setProtocol(protocol);
+    }
+
+    @Override
+    public String getId() {
+        return super.getId();
     }
 
     public String getProtocol() {
@@ -441,14 +441,6 @@ public class RegistryConfig extends AbstractConfig {
         } else {
             this.parameters.putAll(parameters);
         }
-    }
-
-    public Boolean isDefault() {
-        return isDefault;
-    }
-
-    public void setDefault(Boolean isDefault) {
-        this.isDefault = isDefault;
     }
 
     public Boolean getSimplified() {

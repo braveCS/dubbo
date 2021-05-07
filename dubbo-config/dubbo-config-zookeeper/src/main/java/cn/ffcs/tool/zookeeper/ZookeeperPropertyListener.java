@@ -237,11 +237,14 @@ public class ZookeeperPropertyListener extends ContextLoaderListener {
 
         //识别tomcat上下文，自动补全contextpath
         String protoclContextpath = properties.getProperty("dubbo.protocol.contextpath");
-        if (!StringUtils.isEmpty(contextPath)) {
-            if (!StringUtils.isEmpty(protoclContextpath) && !protoclContextpath.startsWith(contextPath)) {
+        if(!StringUtils.isEmpty(protoclContextpath)){
+            if (!StringUtils.isEmpty(contextPath)&&!protoclContextpath.startsWith(contextPath)) {
                 properties.put("dubbo.protocol.contextpath", contextPath + "/" + StringUtils.trimLeadingCharacter(protoclContextpath, '/'));
+            }else if(contextPath.length()==0&&protoclContextpath.contains("/")){ //上下文为""，需要纠正
+                properties.put("dubbo.protocol.contextpath",protoclContextpath.substring(protoclContextpath.indexOf("/")+1));
             }
         }
+
 
         //自动识别端口，并重写端口配置信息
         String port = properties.getProperty("dubbo.protocol.port");

@@ -72,7 +72,7 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
      */
     protected String protocol;
 
-    protected ServiceMetadata serviceMetadata;
+
 
     public ReferenceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -169,9 +169,10 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     public void setInterface(String interfaceName) {
         this.interfaceName = interfaceName;
-        if (StringUtils.isEmpty(id)) {
-            id = interfaceName;
-        }
+        // FIXME, add id strategy in ConfigManager
+//        if (StringUtils.isEmpty(id)) {
+//            id = interfaceName;
+//        }
     }
 
     public void setInterface(Class<?> interfaceClass) {
@@ -261,6 +262,13 @@ public abstract class ReferenceConfigBase<T> extends AbstractReferenceConfig {
 
     @Override
     protected void computeValidRegistryIds() {
+        if (consumer != null) {
+            if (notHasSelfRegistryProperty()) {
+                setRegistries(consumer.getRegistries());
+                setRegistryIds(consumer.getRegistryIds());
+            }
+        }
+
         super.computeValidRegistryIds();
         if (StringUtils.isEmpty(getRegistryIds())) {
             if (getConsumer() != null && StringUtils.isNotEmpty(getConsumer().getRegistryIds())) {
