@@ -86,27 +86,13 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
      * Initializes there Dubbo's Config Beans before @Reference bean autowiring
      */
     private void prepareDubboConfigBeans() {
-        if (getConsumer() == null) {
-            Map<String, ConsumerConfig> consumerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class, false, false);
-            if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
-                ConsumerConfig consumerConfig = null;
-                for (ConsumerConfig config : consumerConfigMap.values()) {
-                    if (config.isDefault() == null || config.isDefault()) {
-                        if (consumerConfig != null) {
-                            logger.warn("重复的consumer配置",new IllegalStateException("Duplicate consumer configs: " + consumerConfig + " and " + config));
-                            break;
-                        }
-                        consumerConfig = config;
-                    }
-                }
-                if (consumerConfig != null) {
-                    setConsumer(consumerConfig);
-                }
-            }
-        }
+        // Refactor 2.7.9
+        final boolean includeNonSingletons = true;
+        final boolean allowEagerInit = false;
+
         if (getTempApplication() == null
                 && (getConsumer() == null || getConsumer().getTempApplication() == null)) {
-            Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class, false, false);
+            Map<String, ApplicationConfig> applicationConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ApplicationConfig.class, includeNonSingletons, allowEagerInit);
             if (applicationConfigMap != null && applicationConfigMap.size() > 0) {
                 ApplicationConfig applicationConfig = null;
                 for (ApplicationConfig config : applicationConfigMap.values()) {
@@ -123,9 +109,10 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
+
         if (getModule() == null
                 && (getConsumer() == null || getConsumer().getModule() == null)) {
-            Map<String, ModuleConfig> moduleConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class, false, false);
+            Map<String, ModuleConfig> moduleConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ModuleConfig.class, includeNonSingletons, allowEagerInit);
             if (moduleConfigMap != null && moduleConfigMap.size() > 0) {
                 ModuleConfig moduleConfig = null;
                 for (ModuleConfig config : moduleConfigMap.values()) {
@@ -142,10 +129,11 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
+
         if ((getRegistries() == null || getRegistries().isEmpty())
                 && (getConsumer() == null || getConsumer().getRegistries() == null || getConsumer().getRegistries().isEmpty())
                 && (getTempApplication() == null || getTempApplication().getRegistries() == null || getTempApplication().getRegistries().isEmpty())) {
-            Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, false, false);
+            Map<String, RegistryConfig> registryConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, RegistryConfig.class, includeNonSingletons, allowEagerInit);
             if (registryConfigMap != null && registryConfigMap.size() > 0) {
                 List<RegistryConfig> registryConfigs = new ArrayList<RegistryConfig>();
                 for (RegistryConfig config : registryConfigMap.values()) {
@@ -158,10 +146,13 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
+
+        BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProtocolConfig.class, includeNonSingletons, allowEagerInit);
+
         if (getMonitor() == null
                 && (getConsumer() == null || getConsumer().getMonitor() == null)
                 && (getTempApplication() == null || getTempApplication().getMonitor() == null)) {
-            Map<String, MonitorConfig> monitorConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class, false, false);
+            Map<String, MonitorConfig> monitorConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MonitorConfig.class, includeNonSingletons, allowEagerInit);
             if (monitorConfigMap != null && monitorConfigMap.size() > 0) {
                 MonitorConfig monitorConfig = null;
                 for (MonitorConfig config : monitorConfigMap.values()) {
@@ -179,29 +170,34 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
             }
         }
 
-        if (getConfigCenter() == null
-                && (getConsumer() == null || getConsumer().getConfigCenter() == null)) {
-            Map<String, ConfigCenterConfig> configCenterConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConfigCenterConfig.class, false, false);
-            if (configCenterConfigMap != null && configCenterConfigMap.size() > 0) {
-                ConfigCenterConfig configCenterConfig = null;
-                for (ConfigCenterConfig config : configCenterConfigMap.values()) {
-                    if (config.isValid()) {
-                        if (configCenterConfig != null) {
-                            logger.warn("重复的configCenter配置",new IllegalStateException("Duplicate configCenter configs: " + configCenterConfig + " and " + config));
+        BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ProviderConfig.class, includeNonSingletons, allowEagerInit);
+
+        if (getConsumer() == null) {
+            Map<String, ConsumerConfig> consumerConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConsumerConfig.class, includeNonSingletons, allowEagerInit);
+            if (consumerConfigMap != null && consumerConfigMap.size() > 0) {
+                ConsumerConfig consumerConfig = null;
+                for (ConsumerConfig config : consumerConfigMap.values()) {
+                    if (config.isDefault() == null || config.isDefault()) {
+                        if (consumerConfig != null) {
+                            logger.warn("重复的consumer配置",new IllegalStateException("Duplicate consumer configs: " + consumerConfig + " and " + config));
                             break;
                         }
-                        configCenterConfig = config;
+                        consumerConfig = config;
                     }
                 }
-                if (configCenterConfig != null) {
-                    setConfigCenter(configCenterConfig);
+                if (consumerConfig != null) {
+                    setConsumer(consumerConfig);
                 }
             }
         }
 
+
+        BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, ConfigCenterBean.class, includeNonSingletons, allowEagerInit);
+
+
         if (getMetadataReportConfig() == null
                 && (getConsumer() == null || getConsumer().getMetadataReportConfig() == null)) {
-            Map<String, MetadataReportConfig> metadataReportConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class, false, false);
+            Map<String, MetadataReportConfig> metadataReportConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetadataReportConfig.class, includeNonSingletons, allowEagerInit);
             if (metadataReportConfigMap != null && metadataReportConfigMap.size() > 0) {
                 MetadataReportConfig metadataReportConfig = null;
                 for (MetadataReportConfig config : metadataReportConfigMap.values()) {
@@ -221,7 +217,7 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
 
         if (getMetrics() == null
                 && (getConsumer() == null || getConsumer().getMetrics() == null)) {
-            Map<String, MetricsConfig> metricsConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class, false, false);
+            Map<String, MetricsConfig> metricsConfigMap = applicationContext == null ? null : BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, MetricsConfig.class, includeNonSingletons, allowEagerInit);
             if (metricsConfigMap != null && metricsConfigMap.size() > 0) {
                 MetricsConfig metricsConfig = null;
                 for (MetricsConfig config : metricsConfigMap.values()) {
@@ -238,6 +234,8 @@ public class ReferenceBean<T> extends ReferenceConfig<T> implements FactoryBean,
                 }
             }
         }
+
+        BeanFactoryUtils.beansOfTypeIncludingAncestors(applicationContext, SslConfig.class, includeNonSingletons, allowEagerInit);
     }
 
     @Override

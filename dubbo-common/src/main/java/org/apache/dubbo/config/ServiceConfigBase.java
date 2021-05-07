@@ -43,10 +43,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
 
     private static final long serialVersionUID = 3033787999037024738L;
 
-    /**
-     * The interface name of the exported service
-     */
-    protected String interfaceName;
+
 
     /**
      * The interface class of the exported service
@@ -78,7 +75,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
      */
     protected volatile String generic;
 
-    protected ServiceMetadata serviceMetadata;
+
 
     public ServiceConfigBase() {
         serviceMetadata = new ServiceMetadata();
@@ -304,9 +301,7 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         setInterface(interfaceClass);
     }
 
-    public String getInterface() {
-        return interfaceName;
-    }
+
 
     public void setInterface(Class<?> interfaceClass) {
         if (interfaceClass != null && !interfaceClass.isInterface()) {
@@ -314,14 +309,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
         }
         this.interfaceClass = interfaceClass;
         setInterface(interfaceClass == null ? null : interfaceClass.getName());
-    }
-
-    public void setInterface(String interfaceName) {
-        this.interfaceName = interfaceName;
-        // FIXME, add id strategy in ConfigManager
-//        if (StringUtils.isEmpty(id)) {
-//            id = interfaceName;
-//        }
     }
 
     public T getRef() {
@@ -423,14 +410,6 @@ public abstract class ServiceConfigBase<T> extends AbstractServiceConfig {
     @Override
     public String getVersion() {
         return StringUtils.isEmpty(this.version) ? (provider != null ? provider.getVersion() : this.version) : this.version;
-    }
-
-    private void computeValidProtocolIds() {
-        if (StringUtils.isEmpty(getProtocolIds())) {
-            if (getProvider() != null && StringUtils.isNotEmpty(getProvider().getProtocolIds())) {
-                setProtocolIds(getProvider().getProtocolIds());
-            }
-        }
     }
 
     @Override
